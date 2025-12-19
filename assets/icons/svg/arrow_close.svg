@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 8</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="我的" transform="translate(-91, -47)">
+            <g id="编组-8" transform="translate(105, 61) scale(-1, 1) translate(-105, -61)translate(91, 47)">
+                <circle id="椭圆形" fill="#0087F0" cx="14" cy="14" r="14"></circle>
+                <g id="编组-7" transform="translate(6, 7)" fill-rule="nonzero">
+                    <rect id="矩形" fill="#0087F0" opacity="0" transform="translate(7.2727, 7.2727) scale(-1, 1) rotate(-90) translate(-7.2727, -7.2727)" x="0" y="0" width="14.5454545" height="14.5454545"></rect>
+                    <path d="M1.72727273,4.45454545 C1.61679071,4.56383362 1.55462121,4.71277854 1.55462121,4.86818182 C1.55462121,5.0235851 1.61679071,5.17253002 1.72727273,5.28181818 L6.6,10.0909091 C6.70928816,10.2013911 6.85823308,10.2635606 7.01363636,10.2635606 C7.16903964,10.2635606 7.31798456,10.2013911 7.42727273,10.0909091 L12.2909091,5.28181818 C12.4386871,5.13404014 12.496401,4.91864896 12.4423105,4.7167804 C12.38822,4.51491184 12.2305427,4.35723455 12.0286741,4.30314403 C11.8268056,4.24905351 11.6114144,4.30676741 11.4636364,4.45454545 L7.00909091,8.82727273 L2.54545455,4.45454545 C2.31878049,4.23040292 1.95394678,4.23040292 1.72727273,4.45454545 Z" id="路径" stroke="#FFFFFF" stroke-width="2" fill="#FFFFFF" transform="translate(7.0084, 7.2734) scale(-1, 1) rotate(-90) translate(-7.0084, -7.2734)"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

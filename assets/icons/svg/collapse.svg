@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 3</title>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="22" height="22" rx="11"></rect>
+        <filter x="-27.3%" y="-27.3%" width="154.5%" height="154.5%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.703956162   0 0 0 0 0.703956162   0 0 0 0 0.703956162  0 0 0 0.743739842 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="借款页-组合-明细" transform="translate(-251, -476)">
+            <g id="编组-3" transform="translate(255, 480)">
+                <g id="矩形">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#333333" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <path d="M11.7071068,9.70710678 L14.2928932,12.2928932 C14.6834175,12.6834175 14.6834175,13.3165825 14.2928932,13.7071068 C14.1053568,13.8946432 13.8510029,14 13.5857864,14 L8.41421356,14 C7.86192881,14 7.41421356,13.5522847 7.41421356,13 C7.41421356,12.7347835 7.5195704,12.4804296 7.70710678,12.2928932 L10.2928932,9.70710678 C10.6834175,9.31658249 11.3165825,9.31658249 11.7071068,9.70710678 Z" id="三角形" fill="#FFFFFF" transform="translate(11, 11.5) scale(1, -1) translate(-11, -11.5)"></path>
+            </g>
+        </g>
+    </g>
+</svg>

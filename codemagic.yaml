@@ -1,0 +1,137 @@
+cache:
+  cache_paths:
+    - ~/.pub-cache
+    - ~/.gradle/caches
+    - ~/.gradle/wrapper
+    - android/.gradle
+
+workflows:
+  # ================= Android — main -> AAB =================
+  android-release-aab:
+    name: Android Release (AAB) on main
+    max_build_duration: 60
+    environment:
+      flutter: 3.32.8
+      java: 17
+      vars:
+        GRADLE_OPTS: "-Xmx4096m"
+        JAVA_TOOL_OPTIONS: "-Xmx4096m"
+      android_signing:
+        - padelgo1
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: "main"
+          include: true
+
+    scripts:
+      - name: Prepare Gradle settings
+        script: |
+          set -e
+          GP="android/gradle.properties"
+          touch "$GP"
+
+          grep -q '^android.useAndroidX=' "$GP" || echo 'android.useAndroidX=true' >> "$GP"
+          grep -q '^android.enableJetifier=' "$GP" || echo 'android.enableJetifier=true' >> "$GP"
+          grep -q '^org.gradle.jvmargs=' "$GP" || echo 'org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8' >> "$GP"
+          grep -q '^kotlin.daemon.jvm.options=' "$GP" || echo 'kotlin.daemon.jvm.options=-Xmx2048m' >> "$GP"
+          grep -q '^org.gradle.workers.max=' "$GP" || echo 'org.gradle.workers.max=2' >> "$GP"
+          grep -q '^org.gradle.parallel=' "$GP" || echo 'org.gradle.parallel=true' >> "$GP"
+          grep -q '^org.gradle.caching=' "$GP" || echo 'org.gradle.caching=true' >> "$GP"
+          grep -q '^kotlin.incremental=' "$GP" || echo 'kotlin.incremental=true' >> "$GP"
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Build app bundle (AAB)
+        script: |
+          set -e
+          VERSION_NAME="${VERSION_NAME:-8.3.1}"
+          VERSION_CODE="${VERSION_CODE:-20251215}"
+          echo "Building AAB for main branch: v$VERSION_NAME ($VERSION_CODE)"
+          flutter build appbundle --release \
+            --target-platform=android-arm64 \
+            --dart-define=FLAVOR=production \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE"
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+
+    publishing:
+      email:
+        recipients:
+          - godwish@estrend.com
+        notify:
+          success: true
+          failure: false
+
+  # ================= Android — test -> APK =================
+  android-test-apk:
+    name: Android Test (APK) on test
+    max_build_duration: 60
+    environment:
+      flutter: 3.32.8
+      java: 17
+      vars:
+        GRADLE_OPTS: "-Xmx4096m"
+        JAVA_TOOL_OPTIONS: "-Xmx4096m"
+      android_signing:
+        - padelgo1
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: "test"
+          include: true
+
+    scripts:
+      - name: Prepare Gradle settings
+        script: |
+          set -e
+          GP="android/gradle.properties"
+          touch "$GP"
+
+          grep -q '^android.useAndroidX=' "$GP" || echo 'android.useAndroidX=true' >> "$GP"
+          grep -q '^android.enableJetifier=' "$GP" || echo 'android.enableJetifier=true' >> "$GP"
+          grep -q '^org.gradle.jvmargs=' "$GP" || echo 'org.gradle.jvmargs=-Xmx4096m -Dfile.encoding=UTF-8' >> "$GP"
+          grep -q '^kotlin.daemon.jvm.options=' "$GP" || echo 'kotlin.daemon.jvm.options=-Xmx2048m' >> "$GP"
+          grep -q '^org.gradle.workers.max=' "$GP" || echo 'org.gradle.workers.max=2' >> "$GP"
+          grep -q '^org.gradle.parallel=' "$GP" || echo 'org.gradle.parallel=true' >> "$GP"
+          grep -q '^org.gradle.caching=' "$GP" || echo 'org.gradle.caching=true' >> "$GP"
+          grep -q '^kotlin.incremental=' "$GP" || echo 'kotlin.incremental=true' >> "$GP"
+
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Build APK (arm64 only)
+        script: |
+          set -e
+          VERSION_NAME="${VERSION_NAME:-8.3.1}"
+          VERSION_CODE="${VERSION_CODE:-20251215}"
+          echo "Building APK for test branch: v$VERSION_NAME ($VERSION_CODE)"
+          flutter build apk --release \
+            --target-platform=android-arm64 \
+            --dart-define=FLAVOR=test \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE"
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+
+    publishing:
+      email:
+        recipients:
+          - godwish@estrend.com
+          - dewi.hong@estrend.com
+          - chengtongzhe@estrend.com
+          - kanlina@estrend.com
+          - kevin@estrend.com
+          - dodi@estrend.com
+          - david@estrend.com
+        notify:
+          success: true
+          failure: false

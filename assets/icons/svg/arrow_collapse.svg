@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 4备份</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="账单页-逾期" transform="translate(-319, -816)">
+            <g id="编组-4备份" transform="translate(329, 826) scale(1, -1) rotate(90) translate(-329, -826)translate(319, 816)">
+                <circle id="椭圆形" fill="#333333" cx="10" cy="10" r="10"></circle>
+                <g id="back-hei备份" transform="translate(10.625, 10.625) scale(-1, 1) rotate(90) translate(-10.625, -10.625)translate(2.5, 2.5)">
+                    <rect id="矩形" opacity="0.600000024" x="0" y="0" width="16.25" height="16.25"></rect>
+                    <rect id="矩形" fill="#FFFFFF" fill-rule="nonzero" opacity="0" x="1.875" y="1.875" width="11.25" height="12.5"></rect>
+                    <path d="M3.26349939,5.76825815 C3.17487178,5.85963067 3.125,5.98415901 3.125,6.114087 C3.125,6.24401498 3.17487178,6.36854332 3.26349939,6.45991585 L7.17235439,10.4806513 C7.26002431,10.573022 7.37950649,10.625 7.50416951,10.625 C7.62883253,10.625 7.74831471,10.573022 7.83598463,10.4806513 L11.737547,6.45991585 C11.8560931,6.3363631 11.9023906,6.15628104 11.8589998,5.98750485 C11.8156089,5.81872865 11.6891217,5.68689944 11.5271846,5.64167599 C11.3652476,5.59645255 11.1924629,5.64470539 11.0739168,5.76825815 L7.50052319,9.42416315 L3.91983699,5.76825815 C3.73800124,5.58085935 3.44533514,5.58085935 3.26349939,5.76825815 Z" id="路径" stroke="#FFFFFF" fill="#FFFFFF" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

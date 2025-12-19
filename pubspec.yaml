@@ -1,0 +1,197 @@
+name: padelgo
+description: A new Flutter project.
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  liveness_plugin:
+    path: liveness_plugin
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.2
+  get_it: ^8.0.3
+  connectivity_plus: ^6.0.0
+  provider: ^6.1.2
+  stacked: ^3.4.3
+
+  # http client
+  http: ^1.2.1
+
+  # extended async support
+  async: ^2.9.0
+
+  # Application Insights
+  device_info_plus: ^11.3.0
+
+  # Saving access token
+  flutter_secure_storage: ^9.2.2
+
+  package_info_plus: ^8.0.2
+  flutter_svg: ^2.0.9
+
+  animations: ^2.0.8
+  showcaseview: ^3.0.0
+  image: ^4.2.0 # For image processing in camera capture
+  path_provider: ^2.1.2
+
+  android_play_install_referrer: ^0.4.0
+  appsflyer_sdk: ^6.15.1
+  permission_handler: ^12.0.1
+  # animated_text_kit: ^4.2.2  # REMOVED - Not used in codebase
+  shared_preferences: ^2.2.3
+  advertising_id: ^2.7.1
+  app_tracking_transparency: ^2.0.6
+  uuid: ^4.2.2
+  crypto: ^3.0.3 # For HMAC and SHA1
+  convert: ^3.0.1 # For Base64 encoding and decoding
+  pointycastle: ^3.5.0
+  encrypt: ^5.0.3
+  # sensors_plus: ^6.1.1  # REMOVED - Only referenced in device info, not critical
+  url_launcher: ^6.1.10
+
+  intl: ^0.20.2
+  # loading_animation_widget: ^1.3.0  # REMOVED - Not used in codebase
+  fluttertoast: ^8.2.8
+  # network_info_plus: ^6.1.4  # REMOVED - Using native channel implementation instead
+
+  typed_data: ^1.3.2
+  image_picker: ^1.0.7
+  camera: ^0.10.6
+  flutter_image_compress: ^2.2.0
+  json_annotation: ^4.9.0
+
+  #  flutter_sms_autofill: ^1.0.4
+  sms_autofill: ^2.4.1
+  geolocator: ^10.1.0
+  geocoding: ^4.0.0
+  firebase_remote_config: ^5.4.7
+  # flutter_html: ^3.0.0-beta.2  # REMOVED - Only used in one dialog, can use Text widget instead
+  # screen_brightness: ^2.1.5  # REMOVED - Only referenced in device info, not critical
+  firebase_database: ^11.3.9
+  # dotted_border: ^2.1.0  # REMOVED - Not used in codebase
+
+  # Firebase
+  firebase_core: ^3.15.1
+  firebase_analytics: ^11.5.2
+  firebase_crashlytics: ^4.3.9
+  firebase_messaging: ^15.2.9
+
+  flutter_local_notifications: ^19.3.0
+
+  restart_app: ^1.3.0
+
+  bot_toast: ^4.1.3
+  easy_localization: ^3.0.7+1
+  safe_device: ^1.3.5
+  # carrier_info: ^3.0.3
+  # device_information: ^0.0.4 # Replaced with device_info_plus
+  devicelocale: ^0.8.0
+  flutter_switch: ^0.3.2
+  carousel_slider: ^5.1.1
+  smooth_page_indicator: ^1.2.1
+  flutter_rating_bar: ^4.0.1
+  signature: ^6.3.0
+  loading_animation_widget: ^1.3.0
+  webview_flutter: ^4.13.0
+  flutter_html: ^3.0.0
+  scrollable_positioned_list: ^0.3.8
+  in_app_review: ^2.0.11
+  upgrader: ^12.3.0
+  google_fonts: ^6.3.3
+
+  hexcolor: ^3.0.1
+  cloud_firestore: ^5.6.12
+  cached_network_image: ^3.4.1
+
+  contacts_service: ^0.6.3
+  firebase_auth: ^5.7.0
+  flutter_facebook_auth: ^7.1.2
+  google_sign_in: ^7.2.0
+  go_router: ^17.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^4.0.0
+
+  flutter_launcher_icons: ^0.13.1
+  build_runner:
+  json_serializable:
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/png/launcher.png" # ganti dengan path ikon kamu
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - assets/icons/png/
+    - assets/icons/svg/
+    - assets/images/
+    - assets/gif/
+    - assets/translations/
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  fonts:
+    - family: Montserrat Alternate
+      fonts:
+        - asset: fonts/MontserratAlternates-BlackItalic.ttf
+          style: italic
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages

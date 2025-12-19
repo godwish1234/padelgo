@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="5px" height="10px" viewBox="0 0 5 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>三角形</title>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="账单页-逾期" transform="translate(-322, -1041)" fill="#0087F0">
+            <g id="编组-7" transform="translate(283, 1039)">
+                <g id="三角形" transform="translate(39, 2)">
+                    <path d="M3.20710678,3.20710678 L5.79289322,5.79289322 C6.18341751,6.18341751 6.18341751,6.81658249 5.79289322,7.20710678 C5.60535684,7.39464316 5.35100293,7.5 5.08578644,7.5 L-0.0857864376,7.5 C-0.638071187,7.5 -1.08578644,7.05228475 -1.08578644,6.5 C-1.08578644,6.23478351 -0.980429597,5.9804296 -0.792893219,5.79289322 L1.79289322,3.20710678 C2.18341751,2.81658249 2.81658249,2.81658249 3.20710678,3.20710678 Z" transform="translate(2.5, 5) scale(1, -1) rotate(90) translate(-2.5, -5)"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
