@@ -6,11 +6,14 @@ import 'package:padelgo/ui/base/loading_state_manager.dart';
 import 'package:padelgo/config/router_config.dart';
 import 'package:padelgo/ui/app_update/app_update_view.dart';
 import 'package:padelgo/config/upgrader_config.dart';
+import 'package:padelgo/services/interfaces/authentication_service.dart';
 import 'package:upgrader/upgrader.dart';
 
 class SplashViewModel extends LoadingAwareViewModel {
   final NavigationService _navigationService =
       GetIt.instance<NavigationService>();
+  final AuthenticationService _authService =
+      GetIt.instance<AuthenticationService>();
   Upgrader? _upgrader;
   BuildContext? _context;
 
@@ -32,9 +35,10 @@ class SplashViewModel extends LoadingAwareViewModel {
     _context = context;
   }
 
-  void _checkAndNavigate() {
+  void _checkAndNavigate() async {
     if (_context == null || !_context!.mounted) return;
 
+    // Check for app update first
     if (_upgrader != null && _upgrader?.isUpdateAvailable() == true) {
       final currentVersion = _upgrader?.currentInstalledVersion;
       final storeVersion = _upgrader?.currentAppStoreVersion;
@@ -48,20 +52,29 @@ class SplashViewModel extends LoadingAwareViewModel {
         AppUpdateView(
           upgrader: _upgrader!,
           isForceUpdate: isForceUpdate,
-          onSkip: isForceUpdate ? null : _navigateToHome,
+          onSkip: isForceUpdate ? null : _navigateBasedOnAuth,
           onUpdate: () {
             _upgrader?.sendUserToAppStore();
           },
         ),
       );
     } else {
-      _navigateToHome();
+      _navigateBasedOnAuth();
     }
   }
 
-  void _navigateToHome() {
+  void _navigateBasedOnAuth() async {
     if (_context != null && _context!.mounted) {
-      _context!.go(AppRoutes.home);
+      // Check if user is already logged in
+      final isLoggedIn = await _authService.isAlreadyLoggedIn();
+      
+      if (isLoggedIn) {
+        // User is logged in, navigate to home
+        _context!.go(AppRoutes.home);
+      } else {
+        // User is not logged in, navigate to login
+        _context!.go(AppRoutes.login);
+      }
     }
   }
 }

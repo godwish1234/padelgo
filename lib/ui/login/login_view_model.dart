@@ -35,6 +35,8 @@ class LoginViewModel extends BaseViewModel {
       if (user != null) {
         // await _profileService.initialize(forceRefresh: true);
         if (context.mounted) {
+          // Use go() to replace navigation stack and prevent back navigation to login
+          // Use go() to replace navigation stack and prevent back navigation to login
           context.go(AppRoutes.home);
         }
       } else {

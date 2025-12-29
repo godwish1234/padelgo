@@ -50,6 +50,8 @@ class _FindGameViewState extends State<FindGameView>
               controller: _tabController,
               indicatorColor: Colors.white,
               indicatorWeight: 3,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withOpacity(0.6),
               labelStyle: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,

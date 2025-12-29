@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:padelgo/ui/activity/new_activity/create_activity_view.dart';
 import 'package:padelgo/ui/home/find_game/find_game_view.dart';
 import 'package:padelgo/ui/notifications/notification_view.dart';
 import 'package:padelgo/ui/chat/chat_view.dart';
+import 'package:padelgo/config/router_config.dart';
 import 'package:stacked/stacked.dart';
 import 'package:padelgo/ui/home/home_view_model.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,6 +33,201 @@ class _HomeViewState extends State<HomeView> {
   void dispose() {
     _autoSlideTimer?.cancel();
     super.dispose();
+  }
+
+  void _showLocationDialog(BuildContext context, HomeViewModel vm) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      color: Theme.of(context).primaryColor,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Select Location',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Current Location Option
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(context);
+                  await vm.useCurrentLocation();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Colors.grey[200]!,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.my_location,
+                          color: Theme.of(context).primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Use Current Location',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              'Automatically detect your location',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey[400],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // City List Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Select City',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ),
+              // City List
+              Container(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: vm.cities.length,
+                  itemBuilder: (context, index) {
+                    final city = vm.cities[index];
+                    final isSelected = vm.selectedCity == city;
+                    return InkWell(
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await vm.selectCity(city);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor.withOpacity(0.05)
+                              : Colors.transparent,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.location_city,
+                              color: isSelected
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.grey[400],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                city,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: Theme.of(context).primaryColor,
+                                size: 20,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // TODO: Re-implement auto-slide to work with ViewModel newsItems
@@ -106,226 +303,273 @@ class _HomeViewState extends State<HomeView> {
             slivers: [
               // Header with Background
               SliverToBoxAdapter(
-                child: Stack(
+                child: Column(
                   children: [
-                    // Sports Background Image
-                    Container(
-                      height: 300,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/bg.jpg'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.5),
-                              Colors.black.withOpacity(0.3),
-                              Colors.black.withOpacity(0.1),
-                              Colors.grey[50]!.withOpacity(0.3),
-                              Colors.grey[50]!,
-                            ],
-                            stops: const [0.0, 0.4, 0.7, 0.9, 1.0],
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Sports Background Image
+                        Container(
+                          height: 260,
+                          decoration: const BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage('assets/images/bg.jpg'),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.5),
+                                  Colors.black.withOpacity(0.3),
+                                  Colors.black.withOpacity(0.1),
+                                  Colors.grey[50]!.withOpacity(0.3),
+                                  Colors.grey[50]!,
+                                ],
+                                stops: const [0.0, 0.4, 0.7, 0.9, 1.0],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    // Header Content
-                    SafeArea(
-                      bottom: false,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        // Header Content
+                        SafeArea(
+                          bottom: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Hello, ${vm.user?.displayName ?? 'Guest'}',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.location_on,
-                                              size: 16, color: Colors.white70),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'Central Jakarta',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          const Icon(Icons.keyboard_arrow_down,
-                                              size: 18, color: Colors.white),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                _buildHeaderIconButton(
-                                  Icons.notifications_outlined,
-                                  badgeCount: 1,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotificationView(),
-                                      ),
-                                    );
-                                  },
-                                  isDark: true,
-                                ),
-                                const SizedBox(width: 10),
-                                _buildHeaderIconButton(
-                                  Icons.chat_bubble_outline,
-                                  badgeCount: 1,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const ChatView(),
-                                      ),
-                                    );
-                                  },
-                                  isDark: true,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            if (vm.user != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.95),
-                                  borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
+                                Row(
                                   children: [
-                                    // Left side - Membership info
                                     Expanded(
-                                      child: Row(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Icon(Icons.workspace_premium,
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
-                                              size: 18),
-                                          const SizedBox(width: 10),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                          Row(
                                             children: [
-                                              Text('Sporta Super',
-                                                  style: GoogleFonts.poppins(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Colors.black87)),
-                                              Text('Membership >',
-                                                  style: GoogleFonts.poppins(
-                                                      fontSize: 11,
-                                                      color: Colors.grey[600])),
+                                              const Icon(
+                                                Icons.sports_tennis,
+                                                color: Colors.white,
+                                                size: 28,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Padel Go',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 28,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
                                             ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Center divider
-                                    Container(
-                                        width: 1,
-                                        height: 32,
-                                        color: const Color.fromRGBO(
-                                            224, 224, 224, 1)),
-                                    Expanded(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Row(
+                                          const SizedBox(height: 8),
+                                          GestureDetector(
+                                            onTap: () => _showLocationDialog(context, vm),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 6,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withOpacity(0.15),
+                                                borderRadius: BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  Icon(Icons.add_circle_outline,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .primary,
-                                                      size: 16),
+                                                  const Icon(Icons.location_on,
+                                                      size: 16,
+                                                      color: Colors.white),
                                                   const SizedBox(width: 6),
-                                                  Text('500.000',
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              color: Colors
-                                                                  .black87)),
+                                                  Text(
+                                                    vm.selectedCity,
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  const Icon(
+                                                      Icons.keyboard_arrow_down,
+                                                      size: 18,
+                                                      color: Colors.white),
                                                 ],
                                               ),
-                                              Text('Sporta Points',
-                                                  style: GoogleFonts.poppins(
-                                                      fontSize: 11,
-                                                      color: Colors.grey[600])),
-                                            ],
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
+                                    _buildHeaderIconButton(
+                                      Icons.notifications_outlined,
+                                      badgeCount: 1,
+                                      onTap: () {
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const NotificationView(),
+                                          ),
+                                        );
+                                      },
+                                      isDark: true,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    _buildHeaderIconButton(
+                                      Icons.chat_bubble_outline,
+                                      badgeCount: 1,
+                                      onTap: () {
+                                        Navigator.of(context,
+                                                rootNavigator: true)
+                                            .push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ChatView(),
+                                          ),
+                                        );
+                                      },
+                                      isDark: true,
+                                    ),
                                   ],
                                 ),
-                              ),
-                          ],
+                                const SizedBox(height: 12),
+                                if (vm.user != null)
+                                  GestureDetector(
+                                    onTap: () {
+                                      context.push(AppRoutes.membership);
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 14),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.95),
+                                        borderRadius: BorderRadius.circular(14),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // Left side - Membership info
+                                          Expanded(
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.workspace_premium,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                    size: 18),
+                                                const SizedBox(width: 10),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text('Sporta Super',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .black87)),
+                                                    Text('Membership >',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                fontSize: 11,
+                                                                color:
+                                                                    Colors.grey[
+                                                                        600])),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          // Center divider
+                                          Container(
+                                              width: 1,
+                                              height: 32,
+                                              color: const Color.fromRGBO(
+                                                  224, 224, 224, 1)),
+                                          Expanded(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Icon(
+                                                            Icons
+                                                                .add_circle_outline,
+                                                            color: Theme.of(
+                                                                    context)
+                                                                .colorScheme
+                                                                .primary,
+                                                            size: 16),
+                                                        const SizedBox(
+                                                            width: 6),
+                                                        Text('500.000',
+                                                            style: GoogleFonts.poppins(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                                color: Colors
+                                                                    .black87)),
+                                                      ],
+                                                    ),
+                                                    Text('Sporta Points',
+                                                        style:
+                                                            GoogleFonts.poppins(
+                                                                fontSize: 11,
+                                                                color:
+                                                                    Colors.grey[
+                                                                        600])),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        // Quick Actions - Overlapping bottom
+                        Positioned(
+                          bottom: -65,
+                          left: 20,
+                          right: 20,
+                          child: _buildModernQuickActions(context, vm),
+                        ),
+                      ],
                     ),
-                    Positioned(
-                      bottom: 0,
-                      left: 20,
-                      right: 20,
-                      child: _buildModernQuickActions(context, vm),
-                    ),
+                    const SizedBox(height: 75),
                   ],
                 ),
               ),
-
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 20),
-              ),
-
-              // Urgent Reminders
-              if (vm.urgentReminders.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _buildCompactRemindersCard(context, vm),
-                ),
 
               // What's New Section
               SliverToBoxAdapter(
@@ -416,244 +660,6 @@ class _HomeViewState extends State<HomeView> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCompactRemindersCard(BuildContext context, HomeViewModel vm) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Reminder Items
-          ...vm.urgentReminders.asMap().entries.map((entry) {
-            final index = entry.key;
-            final reminder = entry.value;
-            final isLast =
-                index == vm.urgentReminders.length - 1 && !vm.hasMoreReminders;
-
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: isLast
-                      ? BorderSide.none
-                      : BorderSide(color: Colors.grey.shade200, width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  // Date Indicator Box (smaller)
-                  _buildDateIndicator(reminder.dueDate),
-                  const SizedBox(width: 12),
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          reminder.title,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 12, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                reminder.time,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  color: Colors.grey[600],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Time Until Badge
-                  _buildTimeUntilBadge(reminder.dueDate, reminder.type),
-                ],
-              ),
-            );
-          }),
-          // See All Button
-          if (vm.hasMoreReminders)
-            InkWell(
-              onTap: () {
-                // TODO: Navigate to full reminders page
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Showing ${vm.reminders.length} total reminders',
-                      style: GoogleFonts.poppins(),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              },
-              borderRadius:
-                  const BorderRadius.vertical(bottom: Radius.circular(20)),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.grey.shade200, width: 1),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'See All Reminders',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateIndicator(DateTime dueDate) {
-    final now = DateTime.now();
-    final isToday = dueDate.year == now.year &&
-        dueDate.month == now.month &&
-        dueDate.day == now.day;
-    final isTomorrow =
-        dueDate.difference(now).inDays == 0 && dueDate.day == now.day + 1;
-
-    Color bgColor;
-    Color textColor;
-    if (isToday || dueDate.isBefore(now.add(const Duration(hours: 24)))) {
-      bgColor = Colors.red[50]!;
-      textColor = Colors.red[700]!;
-    } else if (isTomorrow ||
-        dueDate.isBefore(now.add(const Duration(days: 2)))) {
-      bgColor = Colors.orange[50]!;
-      textColor = Colors.orange[700]!;
-    } else {
-      bgColor = Colors.blue[50]!;
-      textColor = Colors.blue[700]!;
-    }
-
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: textColor.withOpacity(0.2), width: 1.5),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            DateFormat('d').format(dueDate),
-            style: GoogleFonts.poppins(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-              height: 1,
-            ),
-          ),
-          const SizedBox(height: 1),
-          Text(
-            DateFormat('MMM').format(dueDate).toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 8,
-              fontWeight: FontWeight.w600,
-              color: textColor.withOpacity(0.8),
-              letterSpacing: 0.5,
-              height: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeUntilBadge(DateTime dueDate, String type) {
-    final now = DateTime.now();
-    final difference = dueDate.difference(now);
-
-    String timeText;
-    Color bgColor;
-    Color textColor;
-
-    if (difference.isNegative) {
-      timeText = 'Overdue';
-      bgColor = Colors.red[50]!;
-      textColor = Colors.red[700]!;
-    } else if (difference.inHours < 24) {
-      final hours = difference.inHours;
-      timeText = hours == 0 ? 'Soon' : '${hours}h';
-      bgColor = Colors.red[50]!;
-      textColor = Colors.red[700]!;
-    } else if (difference.inDays == 1) {
-      timeText = 'Tomorrow';
-      bgColor = Colors.orange[50]!;
-      textColor = Colors.orange[700]!;
-    } else if (difference.inDays < 7) {
-      timeText = '${difference.inDays}d';
-      bgColor = Colors.blue[50]!;
-      textColor = Colors.blue[700]!;
-    } else {
-      timeText = DateFormat('MMM d').format(dueDate);
-      bgColor = Colors.grey[100]!;
-      textColor = Colors.grey[700]!;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: textColor.withOpacity(0.2), width: 1),
-      ),
-      child: Text(
-        timeText,
-        style: GoogleFonts.poppins(
-          fontSize: 11,
-          fontWeight: FontWeight.bold,
-          color: textColor,
-        ),
-      ),
     );
   }
 
@@ -1182,17 +1188,15 @@ class _HomeViewState extends State<HomeView> {
 
   void _handleActionTap(BuildContext context, QuickAction action) {
     switch (action.id) {
-      case 'new_booking':
-        Navigator.push(
-          context,
+      case 'book_court':
+        Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
             builder: (context) => const CreateActivityView(),
           ),
         );
         break;
-      case 'find_game':
-        Navigator.push(
-          context,
+      case 'find_players':
+        Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
             builder: (context) => const FindGameView(),
           ),

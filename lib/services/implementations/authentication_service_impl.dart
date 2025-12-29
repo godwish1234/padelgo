@@ -29,6 +29,19 @@ class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @override
+  Future<User?> createUserWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      return credential.user;
+    } catch (e) {
+      debugPrint('Create user error: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<bool> isAlreadyLoggedIn() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {

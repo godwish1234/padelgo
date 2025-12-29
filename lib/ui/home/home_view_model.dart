@@ -6,6 +6,22 @@ class HomeViewModel extends BaseViewModel {
   // User data
   User? user;
 
+  // Location state
+  String _selectedCity = 'Jakarta Selatan'; // Default city
+  String get selectedCity => _selectedCity;
+
+  // Available cities
+  final List<String> _cities = [
+    'Jakarta Pusat',
+    'Jakarta Selatan',
+    'Jakarta Utara',
+    'Jakarta Barat',
+    'Jakarta Timur',
+    'Tangerang Selatan',
+    'Bekasi',
+  ];
+  List<String> get cities => _cities;
+
   // Date selection
   DateTime? _selectedStartDate;
   DateTime? get selectedStartDate => _selectedStartDate;
@@ -148,48 +164,69 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
   }
 
+  // Select city and reload data
+  Future<void> selectCity(String city) async {
+    if (_selectedCity == city) return;
+    
+    _selectedCity = city;
+    notifyListeners();
+    
+    // Reload home data for the new city
+    // For now, using same dummy data for all cities
+    await loadHomeData();
+  }
+
+  // Get current location (simulated)
+  Future<void> useCurrentLocation() async {
+    // TODO: Implement actual geolocation
+    // For now, simulate getting location and set to Jakarta Selatan
+    _selectedCity = 'Jakarta Selatan';
+    notifyListeners();
+    
+    // Reload data
+    await loadHomeData();
+  }
+
   // Dummy data methods - Replace with API calls
 
   List<NewsItem> _getDummyNews() {
     return [
       NewsItem(
         id: 'news1',
-        imageUrl:
-            'https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc',
-        title: 'Jakarta Tennis Championship',
-        subtitle: 'This Weekend at Senayan',
+        imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
+        title: 'Jakarta Padel Open 2025',
+        subtitle: 'This Weekend at Senayan Padel Club',
         category: 'Tournament',
       ),
       NewsItem(
         id: 'news2',
         imageUrl:
-            'https://images.unsplash.com/photo-1526232761682-d26e03ac148e',
-        title: 'New Badminton Courts',
-        subtitle: 'Opening at Kemayoran Sports Hall',
+            'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
+        title: 'New Premium Padel Courts',
+        subtitle: 'Opening at Kemayoran Padel Center',
         category: 'Facility',
       ),
       NewsItem(
         id: 'news3',
         imageUrl:
-            'https://images.unsplash.com/photo-1613741616446-1fcdec4d1ba5',
-        title: 'Futsal League Registration',
-        subtitle: 'Now Open - BSD Sports Arena',
+            'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
+        title: 'Padel League Registration',
+        subtitle: 'Now Open - BSD Padel Arena',
         category: 'Registration',
       ),
       NewsItem(
         id: 'news4',
         imageUrl:
-            'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
-        title: 'Basketball Tournament',
-        subtitle: 'Pondok Indah Sports Center',
+            'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827',
+        title: 'Pro Padel Tournament',
+        subtitle: 'Pondok Indah Padel Club',
         category: 'Competition',
       ),
       NewsItem(
         id: 'news5',
-        imageUrl:
-            'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6',
-        title: 'Swimming Pool Renovation',
-        subtitle: 'Completed at Cengkareng Center',
+        imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64',
+        title: 'Court Resurfacing Complete',
+        subtitle: 'Upgraded at Cengkareng Padel',
         category: 'Update',
       ),
     ];
@@ -201,8 +238,8 @@ class HomeViewModel extends BaseViewModel {
       Reminder(
         id: 'rem1',
         type: 'Event',
-        title: 'Badminton Match',
-        time: 'Tomorrow 2:00 PM - Senayan',
+        title: 'Padel Match',
+        time: 'Tomorrow 2:00 PM - Senayan Padel',
         icon: 'sports_tennis',
         dueDate: now.add(const Duration(days: 1)),
       ),
@@ -210,23 +247,23 @@ class HomeViewModel extends BaseViewModel {
         id: 'rem2',
         type: 'Payment',
         title: 'Court Booking Payment',
-        time: 'Rp 150,000 - Due in 3 days',
+        time: 'Rp 200,000 - Due in 3 days',
         icon: 'credit_card',
         dueDate: now.add(const Duration(days: 3)),
       ),
       Reminder(
         id: 'rem3',
         type: 'Competition',
-        title: 'Jakarta Futsal League',
-        time: '7:00 PM - BSD Arena',
+        title: 'Jakarta Padel League',
+        time: '7:00 PM - BSD Padel Arena',
         icon: 'emoji_events',
         dueDate: now.add(const Duration(days: 5)),
       ),
       Reminder(
         id: 'rem4',
         type: 'Event',
-        title: 'Tennis Coaching Session',
-        time: '10:00 AM - Pondok Indah',
+        title: 'Padel Coaching Session',
+        time: '10:00 AM - Pondok Indah Padel',
         icon: 'sports_tennis',
         dueDate: now.add(const Duration(days: 2)),
       ),
@@ -234,16 +271,16 @@ class HomeViewModel extends BaseViewModel {
         id: 'rem5',
         type: 'Reminder',
         title: 'Equipment Return',
-        time: 'Racket rental due',
+        time: 'Padel racket rental due',
         icon: 'fitness_center',
         dueDate: now.add(const Duration(hours: 8)),
       ),
       Reminder(
         id: 'rem6',
         type: 'Event',
-        title: 'Swimming Practice',
-        time: '6:00 AM - Kemayoran',
-        icon: 'pool',
+        title: 'Group Training Session',
+        time: '6:00 AM - Kemayoran Padel',
+        icon: 'groups',
         dueDate: now.add(const Duration(days: 7)),
       ),
     ];
@@ -253,77 +290,94 @@ class HomeViewModel extends BaseViewModel {
     return [
       Venue(
         id: 'senayan',
-        name: 'Senayan Sports Complex',
+        name: 'Senayan Padel Club',
         address: 'Jl. Pintu Satu Senayan, Jakarta Pusat',
         distance: '2.1 km',
         rating: 4.8,
         reviewCount: 156,
-        imageUrl:
-            'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
-        priceRange: 'Rp 120,000 - 200,000',
+        imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
+        priceRange: 'Rp 200,000 - 350,000',
         category: 'Premium',
-        features: ['Basketball', 'Tennis', 'Volleyball'],
+        features: [
+          'Indoor Courts',
+          'Outdoor Courts',
+          'Pro Shop',
+          'Locker Room',
+          'Shower'
+        ],
         openHours: '06:00 - 22:00',
         description:
-            'Premier sports complex in the heart of Jakarta with world-class facilities and professional courts.',
+            'Premier padel club in the heart of Jakarta with 8 professional courts, world-class facilities and professional coaching staff.',
         images: [
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
-          'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
-          'https://images.unsplash.com/photo-1544965503-7ad531123fcf',
+          'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
+          'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
+          'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
         ],
         reviews: [
           VenueReview(
             name: 'Ahmad Rizki',
             rating: 5,
             comment:
-                'Excellent facilities and well-maintained courts. Staff is very professional.',
+                'Excellent padel courts and well-maintained facilities. Staff is very professional and helpful.',
             date: '2 days ago',
           ),
           VenueReview(
             name: 'Sarah Putri',
             rating: 4,
-            comment: 'Great location but can get crowded during peak hours.',
+            comment:
+                'Great courts and atmosphere. Can get crowded during peak hours on weekends.',
             date: '1 week ago',
           ),
         ],
       ),
       Venue(
         id: 'pondok_indah',
-        name: 'Pondok Indah Sports Center',
+        name: 'Pondok Indah Padel Center',
         address: 'Jl. Metro Pondok Indah, Jakarta Selatan',
         distance: '5.3 km',
         rating: 4.6,
         reviewCount: 98,
         imageUrl:
-            'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
-        priceRange: 'Rp 100,000 - 180,000',
+            'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
+        priceRange: 'Rp 180,000 - 300,000',
         category: 'Standard',
-        features: ['Badminton', 'Tennis', 'Squash'],
+        features: [
+          '4 Courts',
+          'Coaching Available',
+          'Equipment Rental',
+          'Cafe'
+        ],
         openHours: '07:00 - 21:00',
         description:
-            'Family-friendly sports center with modern amenities and professional coaching available.',
+            'Family-friendly padel center with modern courts and professional coaching available for all skill levels.',
         images: [
-          'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
+          'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
+          'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
         ],
         reviews: [],
       ),
       Venue(
         id: 'kemayoran',
-        name: 'Kemayoran Sports Hall',
+        name: 'Kemayoran Padel Arena',
         address: 'Jl. Kemayoran Gempol, Jakarta Pusat',
         distance: '3.8 km',
         rating: 4.5,
         reviewCount: 124,
-        imageUrl: 'https://images.unsplash.com/photo-1544965503-7ad531123fcf',
-        priceRange: 'Rp 80,000 - 150,000',
+        imageUrl:
+            'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
+        priceRange: 'Rp 150,000 - 250,000',
         category: 'Budget',
-        features: ['Badminton', 'Futsal', 'Volleyball'],
+        features: [
+          '3 Courts',
+          'Equipment Rental',
+          'Parking',
+          'Beginner Friendly'
+        ],
         openHours: '06:00 - 23:00',
         description:
-            'Affordable sports hall with good facilities for recreational and competitive play.',
+            'Affordable padel arena with good quality courts perfect for recreational and competitive play. Great for beginners.',
         images: [
-          'https://images.unsplash.com/photo-1544965503-7ad531123fcf',
+          'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
         ],
         reviews: [],
       ),
@@ -334,17 +388,17 @@ class HomeViewModel extends BaseViewModel {
     return [
       // Primary Actions - Main features
       QuickAction(
-        id: 'new_booking',
+        id: 'book_court',
         icon: Icons.calendar_month_rounded,
-        label: 'New Booking',
-        color: const Color(0xFF2563EB), // Blue
+        label: 'Book Court',
+        color: const Color(0xFF1E88E5), // Primary Blue
         available: true,
         isPrimary: true,
       ),
       QuickAction(
-        id: 'find_game',
+        id: 'find_players',
         icon: Icons.sports_tennis_rounded,
-        label: 'Find Game',
+        label: 'Find Players',
         color: const Color(0xFF10B981), // Green
         available: true,
         isPrimary: true,

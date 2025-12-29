@@ -86,16 +86,26 @@ class CreateActivityView extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
-                      _buildLocationSection(context, vm),
+                      // Step 1: City Selection
+                      _buildCitySection(context, vm),
                       const SizedBox(height: 20),
-                      if (vm.selectedLocation != null) ...[
+                      // Step 2: Date Selection (shows after city is selected)
+                      if (vm.selectedCity != null) ...[
+                        _buildDateSection(context, vm),
+                        const SizedBox(height: 20),
+                      ],
+                      // Step 3: Court Selection (shows after date is selected)
+                      if (vm.selectedCity != null &&
+                          vm.selectedDate != null) ...[
                         _buildCourtSection(context, vm),
                         const SizedBox(height: 20),
                       ],
+                      // Step 4: Time Slot Selection (shows after court is selected)
                       if (vm.selectedCourt != null) ...[
-                        _buildDateTimeGrid(context, vm),
+                        _buildTimeSlotSection(context, vm),
                         const SizedBox(height: 30),
                       ],
+                      // Summary and Continue Button
                       if (vm.selectedTimeSlots.isNotEmpty) ...[
                         _buildPriceSummary(context, vm),
                         const SizedBox(height: 20),
@@ -113,24 +123,17 @@ class CreateActivityView extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSection(
-      BuildContext context, CreateActivityViewModel vm) {
-    final locationsToShow = vm.isLocationCollapsed &&
-            vm.selectedLocation != null
-        ? vm.locations.where((loc) => loc.name == vm.selectedLocation).toList()
-        : vm.locations;
-
+  Widget _buildCitySection(BuildContext context, CreateActivityViewModel vm) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black.withOpacity(0.06)),
-        boxShadow: null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Flat Header
+          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: const BoxDecoration(
@@ -149,7 +152,7 @@ class CreateActivityView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
-                    Icons.location_on,
+                    Icons.location_city,
                     color: Theme.of(context).colorScheme.primary,
                     size: 20,
                   ),
@@ -160,7 +163,7 @@ class CreateActivityView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Choose Location',
+                        'City',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -168,413 +171,194 @@ class CreateActivityView extends StatelessWidget {
                           letterSpacing: 0.5,
                         ),
                       ),
-                      Text(
-                        'Select your preferred venue',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: Colors.grey[600],
+                      if (vm.selectedCity != null)
+                        Text(
+                          vm.selectedCity!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
-                if (vm.isLocationCollapsed)
+                if (vm.isCityCollapsed)
                   IconButton(
                     icon: Icon(Icons.edit_outlined,
                         size: 20, color: Theme.of(context).primaryColor),
-                    onPressed: () => vm.toggleLocationCollapse(),
-                    tooltip: 'Change location',
+                    onPressed: () => vm.toggleCityCollapse(),
+                    tooltip: 'Change city',
                   ),
               ],
             ),
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: vm.isLocationCollapsed ? 1 : 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: vm.isLocationCollapsed ? 4.5 : 0.88,
+          // City List
+          if (!vm.isCityCollapsed)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: vm.cities.map((city) {
+                  final isSelected = vm.selectedCity == city;
+                  return InkWell(
+                    onTap: () => vm.selectCity(city),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Theme.of(context).primaryColor
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey[300]!,
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        city,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              itemCount: locationsToShow.length,
-              itemBuilder: (context, index) {
-                return _buildLocationCard(context, vm, locationsToShow[index]);
-              },
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildLocationCard(BuildContext context, CreateActivityViewModel vm,
-      LocationOption location) {
-    final isSelected = vm.selectedLocation == location.name;
-
-    return GestureDetector(
-      onTap: () => vm.selectLocation(location.name),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).primaryColor.withOpacity(0.15),
-                    Theme.of(context).primaryColor.withOpacity(0.05),
-                  ],
-                )
-              : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color:
-                isSelected ? Theme.of(context).primaryColor : Colors.grey[200]!,
-            width: isSelected ? 2.5 : 1.5,
-          ),
-          boxShadow: null,
-        ),
-        child: vm.isLocationCollapsed && isSelected
-            ? _buildCollapsedLocationContent(context, location)
-            : _buildExpandedLocationContent(context, location, isSelected),
+  Widget _buildDateSection(BuildContext context, CreateActivityViewModel vm) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.06)),
       ),
-    );
-  }
-
-  Widget _buildCollapsedLocationContent(
-      BuildContext context, LocationOption location) {
-    return Padding(
-      padding: const EdgeInsets.all(10),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.primary,
-                  Theme.of(context).primaryColor.withOpacity(0.8),
-                ],
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
               ),
-              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              _getIconFromString(location.icon),
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
+            child: Row(
               children: [
-                Text(
-                  location.name,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_city,
-                      size: 11,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      location.city,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Icon(
-                      Icons.directions_walk,
-                      size: 11,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      location.distance,
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExpandedLocationContent(
-      BuildContext context, LocationOption location, bool isSelected) {
-    return Column(
-      children: [
-        // Location Image
-        Expanded(
-          flex: 2,
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-            child: Stack(
-              children: [
-                CachedNetworkImage(
-                  imageUrl: location.imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.grey[200]!,
-                          Colors.grey[300]!,
-                        ],
-                      ),
-                    ),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error),
-                  ),
-                ),
-                // Gradient overlay
                 Container(
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                      ],
-                    ),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.calendar_today,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 20,
                   ),
                 ),
-                // City badge with gradient
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).primaryColor.withOpacity(0.9),
-                          Theme.of(context).primaryColor.withOpacity(0.7),
-                        ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Date',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.location_city,
-                          size: 10,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 4),
+                      if (vm.selectedDate != null)
                         Text(
-                          location.city,
+                          DateFormat('EEEE, d MMMM yyyy')
+                              .format(vm.selectedDate!),
                           style: GoogleFonts.poppins(
-                            fontSize: 9,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Selected checkmark overlay
-                if (isSelected)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: null,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-        // Location Details
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Name with icon
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        gradient: isSelected
-                            ? LinearGradient(
-                                colors: [
-                                  Theme.of(context).colorScheme.primary,
-                                  Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.8),
-                                ],
-                              )
-                            : null,
-                        color: isSelected ? null : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Icon(
-                        _getIconFromString(location.icon),
-                        color: Colors.white,
-                        size: 10,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(
-                        location.name,
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 10,
-                          color: Colors.black87,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                // Address
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 9,
-                      color: Colors.grey[500],
-                    ),
-                    const SizedBox(width: 3),
-                    Expanded(
-                      child: Text(
-                        location.address,
-                        style: GoogleFonts.poppins(
-                          fontSize: 7,
-                          color: Colors.grey[600],
-                          height: 1.1,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                // Distance badge
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).primaryColor.withOpacity(0.15),
-                        Theme.of(context).primaryColor.withOpacity(0.08),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.directions_walk,
-                        size: 9,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        location.distance,
-                        style: GoogleFonts.poppins(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Icon(Icons.calendar_month,
+                      size: 22, color: Theme.of(context).primaryColor),
+                  onPressed: () => _showDatePicker(context, vm),
+                  tooltip: 'Open calendar',
+                ),
               ],
             ),
           ),
-        ),
-      ],
+          // Date List
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: SizedBox(
+              height: 82,
+              child: _buildDateList(context, vm),
+            ),
+          ),
+          // Info about available courts
+          if (vm.selectedDate != null)
+            Container(
+              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 18,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${vm.availableCourtsCount} courts available in ${vm.selectedCity}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
   }
 
   Widget _buildCourtSection(BuildContext context, CreateActivityViewModel vm) {
-    final courts = vm.courtsForSelectedLocation;
+    final courts = vm.availableCourtsForSelectedCityAndDate;
 
     final courtsToShow = vm.isCourtCollapsed && vm.selectedCourt != null
-        ? courts.where((court) => court.name == vm.selectedCourt).toList()
+        ? courts.where((court) => court.court.name == vm.selectedCourt).toList()
         : courts;
 
     return Container(
@@ -616,7 +400,7 @@ class CreateActivityView extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Choose Court',
+                        'Available Courts',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -625,7 +409,7 @@ class CreateActivityView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Pick your favorite court type',
+                        '${vm.availableCourtsCount} courts in ${vm.selectedCity}',
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           color: Colors.grey[600],
@@ -661,8 +445,9 @@ class CreateActivityView extends StatelessWidget {
     );
   }
 
-  Widget _buildCourtCard(
-      BuildContext context, CreateActivityViewModel vm, CourtOption court) {
+  Widget _buildCourtCard(BuildContext context, CreateActivityViewModel vm,
+      CourtOptionWithLocation courtWithLocation) {
+    final court = courtWithLocation.court;
     final isSelected = vm.selectedCourt == court.name;
 
     return GestureDetector(
@@ -1036,6 +821,106 @@ class CreateActivityView extends StatelessWidget {
     );
   }
 
+  Widget _buildTimeSlotSection(
+      BuildContext context, CreateActivityViewModel vm) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.access_time,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Time Slots',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        vm.selectedDate != null
+                            ? DateFormat('EEEE, d MMM').format(vm.selectedDate!)
+                            : 'Choose your preferred time',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Time Slots Grid
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                _buildTimePeriodSection(
+                  context,
+                  vm,
+                  'Morning',
+                  6,
+                  12,
+                ),
+                const SizedBox(height: 16),
+                _buildTimePeriodSection(
+                  context,
+                  vm,
+                  'Afternoon',
+                  12,
+                  17,
+                ),
+                const SizedBox(height: 16),
+                _buildTimePeriodSection(
+                  context,
+                  vm,
+                  'Evening',
+                  17,
+                  24,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDateTimeGrid(BuildContext context, CreateActivityViewModel vm) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1102,7 +987,9 @@ class CreateActivityView extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        DateFormat('MMMM yyyy').format(vm.selectedDate),
+                        vm.selectedDate != null
+                            ? DateFormat('MMMM yyyy').format(vm.selectedDate!)
+                            : '',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1189,12 +1076,13 @@ class CreateActivityView extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: slots.map((slot) {
-            final isSelected = vm.isTimeSlotSelected(vm.selectedDate, slot);
+            final isSelected = vm.selectedDate != null &&
+                vm.isTimeSlotSelected(vm.selectedDate!, slot);
             final timeString =
                 '${slot.hour.toString().padLeft(2, '0')}:${slot.minute.toString().padLeft(2, '0')}';
 
             return GestureDetector(
-              onTap: () => vm.toggleTimeSlot(vm.selectedDate, slot),
+              onTap: () => vm.toggleTimeSlot(slot),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding:
@@ -1364,7 +1252,7 @@ class CreateActivityView extends StatelessWidget {
                 ),
               ),
               Text(
-                'Rp${NumberFormat('#,###', 'id_ID').format(selectedCourtData?.pricePerHour ?? 0)}/jam',
+                'Rp${NumberFormat('#,###', 'id_ID').format(selectedCourtData?.court.pricePerHour ?? 0)}/jam',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -1435,7 +1323,8 @@ class CreateActivityView extends StatelessWidget {
 
   Widget _buildDateList(BuildContext context, CreateActivityViewModel vm) {
     // Calculate the index of the selected date
-    final daysDifference = vm.selectedDate.difference(DateTime.now()).inDays;
+    final daysDifference =
+        vm.selectedDate?.difference(DateTime.now()).inDays ?? 0;
 
     // Extend the list to include the selected date if it's beyond 30 days
     final maxDays = daysDifference >= 30 ? daysDifference + 10 : 30;
@@ -1450,8 +1339,9 @@ class CreateActivityView extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final date = DateTime.now().add(Duration(days: index));
-        final isSelected = DateFormat('yyyy-MM-dd').format(vm.selectedDate) ==
-            DateFormat('yyyy-MM-dd').format(date);
+        final isSelected = vm.selectedDate != null &&
+            DateFormat('yyyy-MM-dd').format(vm.selectedDate!) ==
+                DateFormat('yyyy-MM-dd').format(date);
         final isToday = index == 0;
 
         return GestureDetector(

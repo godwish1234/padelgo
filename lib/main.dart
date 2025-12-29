@@ -105,7 +105,7 @@ class _PadelGoState extends State<PadelGo> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Pilih Kredit',
+      title: 'Padel Go',
       routerConfig: app_router.RouterConfig.router,
       builder: (context, child) {
         return MediaQuery(
@@ -121,13 +121,64 @@ class _PadelGoState extends State<PadelGo> with WidgetsBindingObserver {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       theme: ThemeData(
+        useMaterial3: true,
         primaryColor: BaseColors.primaryColor,
-        colorScheme: ColorScheme.fromSeed(seedColor: BaseColors.primaryColor),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: BaseColors.primaryColor,
+          primary: BaseColors.primaryColor,
+          secondary: const Color(0xFF42A5F5),
+          tertiary: const Color(0xFF0D47A1),
+          surface: Colors.white,
+          background: const Color(0xFFF5F9FF),
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF5F9FF),
         appBarTheme: const AppBarTheme(
+          backgroundColor: BaseColors.primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
           systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Color.fromARGB(0, 163, 124, 124),
-            statusBarBrightness: Brightness.light,
-            statusBarIconBrightness: Brightness.dark,
+            statusBarColor: Colors.transparent,
+            statusBarBrightness: Brightness.dark,
+            statusBarIconBrightness: Brightness.light,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: BaseColors.primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: BaseColors.primaryColor,
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: BaseColors.primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                const BorderSide(color: BaseColors.primaryColor, width: 2),
           ),
         ),
       ),
