@@ -26,9 +26,9 @@ class EnvironmentConfig {
   static String get baseUrl {
     switch (environment) {
       case Environment.test:
-        return 'http://147.139.188.108:8821';
+        return 'http://103.87.67.237';
       case Environment.production:
-        return 'https://apl.padelgo.id';
+        return 'http://103.87.67.237';
     }
   }
 

@@ -1,10 +1,14 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
+import 'package:get_it/get_it.dart';
+import 'package:padelgo/services/interfaces/authentication_service.dart';
+import 'package:padelgo/models/user_model.dart';
 
 class HomeViewModel extends BaseViewModel {
   // User data
-  User? user;
+  UserModel? user;
+
+  final _auth = GetIt.I<AuthenticationService>();
 
   // Location state
   String _selectedCity = 'Jakarta Selatan'; // Default city
@@ -56,7 +60,11 @@ class HomeViewModel extends BaseViewModel {
   bool get hasMoreReminders => _reminders.length > 3;
 
   Future<void> initialize() async {
-    user = FirebaseAuth.instance.currentUser;
+    // Get current user from authentication service
+    final loginInfo = _auth.getCurrentLoginInfo();
+    if (loginInfo != null && loginInfo is UserModel) {
+      user = loginInfo;
+    }
 
     DateTime startDate = DateTime.now().subtract(const Duration(days: 4));
     await updateDate(
@@ -167,10 +175,10 @@ class HomeViewModel extends BaseViewModel {
   // Select city and reload data
   Future<void> selectCity(String city) async {
     if (_selectedCity == city) return;
-    
+
     _selectedCity = city;
     notifyListeners();
-    
+
     // Reload home data for the new city
     // For now, using same dummy data for all cities
     await loadHomeData();
@@ -182,7 +190,7 @@ class HomeViewModel extends BaseViewModel {
     // For now, simulate getting location and set to Jakarta Selatan
     _selectedCity = 'Jakarta Selatan';
     notifyListeners();
-    
+
     // Reload data
     await loadHomeData();
   }

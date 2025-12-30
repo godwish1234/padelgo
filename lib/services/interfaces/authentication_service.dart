@@ -1,8 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:padelgo/models/auth_response.dart';
 
 abstract class AuthenticationService<T> {
-  Future<User?> signInWithEmailAndPassword(String phoneno, String password);
-  Future<User?> createUserWithEmailAndPassword(String email, String password);
+  Future<AuthResponse?> signInWithEmailAndPassword(
+      String email, String password);
+  Future<AuthResponse?> createUserWithEmailAndPassword(
+    String name,
+    String email,
+    String phone,
+    String password,
+    String passwordConfirmation,
+  );
   Future<bool> isAlreadyLoggedIn();
   void signOut();
   bool isLoggedIn();

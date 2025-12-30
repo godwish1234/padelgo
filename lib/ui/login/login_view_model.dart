@@ -1,11 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stacked/stacked.dart';
 import 'package:padelgo/config/router_config.dart';
 import 'package:padelgo/services/interfaces/authentication_service.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:padelgo/models/auth_response.dart';
 
 class LoginViewModel extends BaseViewModel {
   final _auth = GetIt.I<AuthenticationService>();
@@ -26,24 +25,44 @@ class LoginViewModel extends BaseViewModel {
 
   initialize() async {}
 
-  void signIn(BuildContext context, String phoneno, String password) async {
+  void signIn(BuildContext context, String email, String password) async {
     setBusy(true);
 
     try {
-      User? user = await _auth.signInWithEmailAndPassword(phoneno, password);
+      AuthResponse? response =
+          await _auth.signInWithEmailAndPassword(email, password);
 
-      if (user != null) {
-        // await _profileService.initialize(forceRefresh: true);
+      if (response != null && response.success) {
         if (context.mounted) {
-          // Use go() to replace navigation stack and prevent back navigation to login
-          // Use go() to replace navigation stack and prevent back navigation to login
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message),
+              backgroundColor: Colors.green,
+            ),
+          );
           context.go(AppRoutes.home);
         }
       } else {
-        debugPrint('error occurred');
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login failed. Please check your credentials.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        debugPrint('Login failed');
       }
     } catch (e) {
-      debugPrint('error occurred: $e');
+      debugPrint('Login error: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       setBusy(false);
     }
@@ -53,39 +72,18 @@ class LoginViewModel extends BaseViewModel {
     setBusy(true);
 
     try {
-      // TODO: Fix Google Sign-In implementation
-      // Google Sign-In requires platform-specific configuration
-      debugPrint('Google Sign-In is not currently configured');
+      // Google Sign-In is not currently implemented with the custom backend
+      debugPrint(
+          'Google Sign-In is not currently configured with custom backend');
 
-      /* Uncomment and fix when Google Sign-In is properly configured
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        scopes: ['email'],
-      );
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-
-      if (googleUser == null) {
-        setBusy(false);
-        return;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Google Sign-In not available yet'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      final user = userCredential.user;
-
-      if (user != null) {
-        if (context.mounted) {
-          context.go(AppRoutes.home);
-        }
-      }
-      */
     } catch (e) {
       debugPrint('Google sign in error: $e');
       notifyListeners();
@@ -98,34 +96,17 @@ class LoginViewModel extends BaseViewModel {
     setBusy(true);
 
     try {
-      // Initialize Facebook login
-      final LoginResult result = await FacebookAuth.instance.login();
+      // Facebook Sign-In is not currently implemented with the custom backend
+      debugPrint(
+          'Facebook Sign-In is not currently configured with custom backend');
 
-      if (result.status == LoginStatus.success) {
-        // Get access token
-        final AccessToken accessToken = result.accessToken!;
-
-        // Create credential for Firebase
-        final OAuthCredential credential =
-            FacebookAuthProvider.credential(accessToken.tokenString);
-
-        // Sign in with Firebase
-        final userCredential =
-            await FirebaseAuth.instance.signInWithCredential(credential);
-        final user = userCredential.user;
-
-        if (user != null) {
-          // await _profileService.initialize(forceRefresh: true);
-          if (context.mounted) {
-            context.go(AppRoutes.home);
-          }
-        }
-      } else if (result.status == LoginStatus.cancelled) {
-        // User canceled login
-        debugPrint('Facebook login canceled');
-      } else {
-        debugPrint('Facebook login failed with status: ${result.status}');
-        notifyListeners();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Facebook Sign-In not available yet'),
+            backgroundColor: Colors.orange,
+          ),
+        );
       }
     } catch (e) {
       debugPrint('Facebook sign in error: $e');
