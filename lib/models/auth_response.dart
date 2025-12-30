@@ -22,7 +22,7 @@ class AuthData {
 @JsonSerializable(explicitToJson: true)
 class AuthResponse {
   final bool success;
-  final String message;
+  final String? message;
   final AuthData data;
 
   AuthResponse({

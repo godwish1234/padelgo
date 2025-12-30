@@ -2,16 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stacked/stacked.dart';
-import 'package:get_it/get_it.dart';
 import 'package:padelgo/enums/language.dart';
 import 'package:padelgo/config/router_config.dart';
-import 'package:padelgo/services/interfaces/authentication_service.dart';
 import 'package:padelgo/models/user_model.dart';
 
 class ScaffoldViewModel extends BaseViewModel {
   UserModel? user;
-
-  final _auth = GetIt.I<AuthenticationService>();
 
   // View Model States
   var _currentNavIndex = 0;
@@ -23,10 +19,6 @@ class ScaffoldViewModel extends BaseViewModel {
   List<Language> get availableLanguages => Language.values;
 
   void initialize() async {
-    final loginInfo = _auth.getCurrentLoginInfo();
-    if (loginInfo != null && loginInfo is UserModel) {
-      user = loginInfo;
-    }
     notifyListeners();
   }
 

@@ -5,9 +5,11 @@ import 'package:stacked/stacked.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:padelgo/config/router_config.dart';
 import 'package:padelgo/services/interfaces/authentication_service.dart';
+import 'package:padelgo/services/interfaces/profile_service.dart';
 
 class ProfileViewModel extends BaseViewModel {
   final _auth = GetIt.instance<AuthenticationService>();
+  final _profileService = GetIt.instance<ProfileService>();
 
   dynamic _userProfile;
   dynamic get userProfile => _userProfile;
@@ -25,7 +27,7 @@ class ProfileViewModel extends BaseViewModel {
   Future<void> initialize() async {
     setBusy(true);
     try {
-      // _userProfile = await _profileService.getUserProfile();
+      _userProfile = await _profileService.getUserProfile();
     } catch (e) {
       debugPrint("Error fetching user profile: $e");
     } finally {
@@ -92,12 +94,16 @@ class ProfileViewModel extends BaseViewModel {
   Future<void> logout(BuildContext context) async {
     setBusy(true);
     try {
-      _auth.signOut();
+      await _auth.signOut();
       if (context.mounted) {
         context.go(AppRoutes.login);
       }
     } catch (e) {
       debugPrint("Error during logout: $e");
+      // Still navigate to login even if logout fails
+      if (context.mounted) {
+        context.go(AppRoutes.login);
+      }
     } finally {
       setBusy(false);
     }

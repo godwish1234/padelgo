@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:padelgo/initialization/services/navigation_service.dart';
 import 'package:padelgo/ui/base/loading_state_manager.dart';
 import 'package:padelgo/config/router_config.dart';
 import 'package:padelgo/ui/app_update/app_update_view.dart';
@@ -10,8 +9,6 @@ import 'package:padelgo/services/interfaces/authentication_service.dart';
 import 'package:upgrader/upgrader.dart';
 
 class SplashViewModel extends LoadingAwareViewModel {
-  final NavigationService _navigationService =
-      GetIt.instance<NavigationService>();
   final AuthenticationService _authService =
       GetIt.instance<AuthenticationService>();
   Upgrader? _upgrader;
@@ -48,15 +45,18 @@ class SplashViewModel extends LoadingAwareViewModel {
         storeVersion,
       );
 
-      _navigationService.pushAndRemoveUntil(
-        AppUpdateView(
-          upgrader: _upgrader!,
-          isForceUpdate: isForceUpdate,
-          onSkip: isForceUpdate ? null : _navigateBasedOnAuth,
-          onUpdate: () {
-            _upgrader?.sendUserToAppStore();
-          },
+      Navigator.of(_context!).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => AppUpdateView(
+            upgrader: _upgrader!,
+            isForceUpdate: isForceUpdate,
+            onSkip: isForceUpdate ? null : _navigateBasedOnAuth,
+            onUpdate: () {
+              _upgrader?.sendUserToAppStore();
+            },
+          ),
         ),
+        (route) => false,
       );
     } else {
       _navigateBasedOnAuth();
@@ -66,8 +66,8 @@ class SplashViewModel extends LoadingAwareViewModel {
   void _navigateBasedOnAuth() async {
     if (_context != null && _context!.mounted) {
       // Check if user is already logged in
-      final isLoggedIn = await _authService.isAlreadyLoggedIn();
-      
+      final isLoggedIn = await _authService.isLoggedIn();
+
       if (isLoggedIn) {
         // User is logged in, navigate to home
         _context!.go(AppRoutes.home);

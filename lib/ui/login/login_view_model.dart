@@ -36,7 +36,7 @@ class LoginViewModel extends BaseViewModel {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.message),
+              content: Text(response.message ?? ''),
               backgroundColor: Colors.green,
             ),
           );
@@ -55,14 +55,6 @@ class LoginViewModel extends BaseViewModel {
       }
     } catch (e) {
       debugPrint('Login error: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
     } finally {
       setBusy(false);
     }

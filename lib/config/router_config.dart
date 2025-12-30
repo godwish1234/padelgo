@@ -24,9 +24,9 @@ class RouterConfig {
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: true,
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final authService = GetIt.I<AuthenticationService>();
-      final isLoggedIn = authService.isLoggedIn();
+      final isLoggedIn = await authService.isLoggedIn();
       final isGoingToLogin = state.matchedLocation == AppRoutes.login;
 
       if (isLoggedIn && isGoingToLogin) {

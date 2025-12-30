@@ -75,6 +75,10 @@ class GetHelper<T> {
                 !extractedData.containsKey("msg_p")) {
               extractedData["msg_p"] = data["msg"];
             }
+            if (data.containsKey("message") &&
+                !extractedData.containsKey("message")) {
+              extractedData["message"] = data["message"];
+            }
             if (data.containsKey("trace_id") &&
                 !extractedData.containsKey("trace_id")) {
               extractedData["trace_id"] = data["trace_id"];

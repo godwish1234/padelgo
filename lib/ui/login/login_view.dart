@@ -120,194 +120,28 @@ class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
           return Scaffold(
             backgroundColor: backgroundColor,
             body: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isWideScreen = constraints.maxWidth > 800;
-
-                  if (isWideScreen) {
-                    // Desktop/Tablet layout
-                    return Row(
-                      children: [
-                        // Left side - Branding
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [padelBlue, padelGreen],
-                              ),
-                            ),
-                            child:
-                                _buildBrandingSection(textColor: Colors.white),
-                          ),
-                        ),
-                        // Right side - Form
-                        Expanded(
-                          child: Container(
-                            color: backgroundColor,
-                            child: Center(
-                              child: SingleChildScrollView(
-                                padding: const EdgeInsets.all(40),
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 450),
-                                  child: _buildLoginForm(
-                                    vm,
-                                    cardColor,
-                                    textColor,
-                                    hintColor,
-                                    padelGreen,
-                                    isDarkMode,
-                                    size,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  } else {
-                    // Mobile layout
-                    return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            padelBlue.withOpacity(0.1),
-                            backgroundColor,
-                          ],
-                          stops: const [0.0, 0.3],
-                        ),
-                      ),
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 40),
-                              _buildBrandingSection(
-                                textColor: textColor,
-                                isCompact: true,
-                              ),
-                              const SizedBox(height: 40),
-                              _buildLoginForm(
-                                vm,
-                                cardColor,
-                                textColor,
-                                hintColor,
-                                padelGreen,
-                                isDarkMode,
-                                size,
-                              ),
-                              const SizedBox(height: 40),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                },
+              child: Center(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: _buildLoginForm(
+                      vm,
+                      cardColor,
+                      textColor,
+                      hintColor,
+                      padelGreen,
+                      isDarkMode,
+                      size,
+                    ),
+                  ),
+                ),
               ),
             ),
           );
         });
-  }
-
-  Widget _buildBrandingSection({
-    required Color textColor,
-    bool isCompact = false,
-  }) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Padel icon
-          ScaleTransition(
-            scale: _scaleAnimation,
-            child: Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    spreadRadius: 5,
-                  ),
-                ],
-              ),
-              child: Icon(
-                Icons.sports_tennis,
-                size: isCompact ? 60 : 80,
-                color: textColor,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            "PadelGo",
-            style: GoogleFonts.poppins(
-              fontSize: isCompact ? 42 : 56,
-              fontWeight: FontWeight.bold,
-              color: textColor,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (!isCompact) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                "Book your padel court in seconds",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  color: textColor.withOpacity(0.9),
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildFeatureChip("🎾 100+ Courts", textColor),
-                  _buildFeatureChip("⚡ Instant Booking", textColor),
-                  _buildFeatureChip("👥 Find Players", textColor),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureChip(String text, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          fontSize: 12,
-          color: textColor,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
   }
 
   Widget _buildLoginForm(
@@ -464,7 +298,7 @@ class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildSocialButton(
                     onTap: () => vm.signInWithGoogle(context),
-                    icon: 'assets/icons/google_icon.png',
+                    icon: 'icons/google_icon.png',
                     label: 'Google',
                     isDarkMode: isDarkMode,
                   ),
@@ -473,7 +307,7 @@ class _LoginViewState extends State<LoginView> with TickerProviderStateMixin {
                 Expanded(
                   child: _buildSocialButton(
                     onTap: () => vm.signInWithFacebook(context),
-                    icon: 'assets/icons/facebook_icon.png',
+                    icon: 'icons/facebook_icon.png',
                     label: 'Facebook',
                     isDarkMode: isDarkMode,
                   ),

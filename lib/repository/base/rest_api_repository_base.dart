@@ -1,16 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:padelgo/constants/url.dart';
-
-import 'package:padelgo/initialization/services/navigation_service.dart';
+import 'package:padelgo/config/router_config.dart' as app_router;
 import 'package:padelgo/repository/base/session_expired_exception.dart';
-import 'package:padelgo/services/interfaces/authentication_service.dart';
 import 'package:padelgo/services/api_error_handler.dart';
 import 'package:padelgo/models/api_response.dart';
 import 'package:padelgo/enums/response_code.dart';
@@ -19,6 +17,7 @@ import 'package:padelgo/ui/base/loading_state_manager.dart';
 import 'package:padelgo/ui/components/offline_widget.dart';
 import 'package:padelgo/ui/components/server_unavailable_widget.dart';
 import 'package:padelgo/utils/secure_storage_util.dart';
+import 'package:padelgo/utils/toast_util.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -114,20 +113,6 @@ class RestApiRepositoryBase {
       }
 
       if (authToken == null || authToken.isEmpty) {
-        try {
-          final authService = GetIt.instance<AuthenticationService>();
-          final loginInfo = authService.getCurrentLoginInfo();
-          if (loginInfo != null && loginInfo.authorization != null) {
-            authToken = loginInfo.authorization!;
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error getting authorization from LoginInfo: $e');
-          }
-        }
-      }
-
-      if (authToken == null || authToken.isEmpty) {
         final prefs = await SharedPreferences.getInstance();
         authToken = prefs.getString("userToken");
       }
@@ -149,32 +134,25 @@ class RestApiRepositoryBase {
         fullUrl = newUri.toString();
       }
 
-      HttpClient client = HttpClient();
-      client.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
-
       if (kDebugMode) {
         print("Executing Api: $fullUrl");
       }
 
       try {
-        HttpClientRequest request =
-            await client.getUrl(Uri.parse(fullUrl)).timeout(_apiTimeout);
+        final response = await http
+            .get(
+              Uri.parse(fullUrl),
+              headers: headers,
+            )
+            .timeout(_apiTimeout);
 
-        headers.forEach((key, value) => request.headers.add(key, value));
-
-        HttpClientResponse response =
-            await request.close().timeout(_apiTimeout);
-
-        final responseBody =
-            await response.transform(utf8.decoder).join().timeout(_apiTimeout);
-        final decodedResponse = jsonDecode(responseBody);
+        final decodedResponse = jsonDecode(response.body);
 
         await _handleHttpAndApiResponse(response.statusCode, decodedResponse,
             suppressErrorToast: suppressErrorToast);
 
         return decodedResponse;
-      } on SocketException {
+      } on http.ClientException {
         setGlobalServerError();
         _showServerUnavailableScreen();
         throw Exception('Server unavailable - please try again later');
@@ -221,20 +199,6 @@ class RestApiRepositoryBase {
       }
 
       if (authToken == null || authToken.isEmpty) {
-        try {
-          final authService = GetIt.instance<AuthenticationService>();
-          final loginInfo = authService.getCurrentLoginInfo();
-          if (loginInfo != null && loginInfo.authorization != null) {
-            authToken = loginInfo.authorization!;
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error getting authorization from LoginInfo: $e');
-          }
-        }
-      }
-
-      if (authToken == null || authToken.isEmpty) {
         final prefs = await SharedPreferences.getInstance();
         authToken = prefs.getString("userToken");
       }
@@ -245,35 +209,25 @@ class RestApiRepositoryBase {
         headers["Authorization"] = authToken;
       }
 
-      HttpClient client = HttpClient();
-      client.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
-
       if (kDebugMode) {
         print("Executing Api: $_baseEndpoint + $endPoint");
       }
       try {
-        HttpClientRequest request = await client
-            .postUrl(Uri.parse(_baseEndpoint + endPoint))
+        final response = await http
+            .post(
+              Uri.parse(_baseEndpoint + endPoint),
+              headers: headers,
+              body: jsonEncode(data),
+            )
             .timeout(_apiTimeout);
 
-        headers.forEach((key, value) => request.headers.add(key, value));
-
-        String jsonData = jsonEncode(data);
-        request.add(utf8.encode(jsonData));
-
-        HttpClientResponse response =
-            await request.close().timeout(_apiTimeout);
-
-        final responseBody =
-            await response.transform(utf8.decoder).join().timeout(_apiTimeout);
-        final decodedResponse = jsonDecode(responseBody);
+        final decodedResponse = jsonDecode(response.body);
 
         await _handleHttpAndApiResponse(response.statusCode, decodedResponse,
             suppressErrorToast: suppressErrorToast);
 
         return decodedResponse;
-      } on SocketException {
+      } on http.ClientException {
         setGlobalServerError();
         _showServerUnavailableScreen();
         throw Exception('Server unavailable - please try again later');
@@ -321,20 +275,6 @@ class RestApiRepositoryBase {
       }
 
       if (authToken == null || authToken.isEmpty) {
-        try {
-          final authService = GetIt.instance<AuthenticationService>();
-          final loginInfo = authService.getCurrentLoginInfo();
-          if (loginInfo != null && loginInfo.authorization != null) {
-            authToken = loginInfo.authorization!;
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print('Error getting authorization from LoginInfo: $e');
-          }
-        }
-      }
-
-      if (authToken == null || authToken.isEmpty) {
         final prefs = await SharedPreferences.getInstance();
         authToken = prefs.getString("userToken");
       }
@@ -356,32 +296,25 @@ class RestApiRepositoryBase {
         fullUrl = newUri.toString();
       }
 
-      HttpClient client = HttpClient();
-      client.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
-
       if (kDebugMode) {
         print("Executing DELETE Api: $fullUrl");
       }
 
       try {
-        HttpClientRequest request =
-            await client.deleteUrl(Uri.parse(fullUrl)).timeout(_apiTimeout);
+        final response = await http
+            .delete(
+              Uri.parse(fullUrl),
+              headers: headers,
+            )
+            .timeout(_apiTimeout);
 
-        headers.forEach((key, value) => request.headers.add(key, value));
-
-        HttpClientResponse response =
-            await request.close().timeout(_apiTimeout);
-
-        final responseBody =
-            await response.transform(utf8.decoder).join().timeout(_apiTimeout);
-        final decodedResponse = jsonDecode(responseBody);
+        final decodedResponse = jsonDecode(response.body);
 
         await _handleHttpAndApiResponse(response.statusCode, decodedResponse,
             suppressErrorToast: suppressErrorToast);
 
         return decodedResponse;
-      } on SocketException {
+      } on http.ClientException {
         setGlobalServerError();
         _showServerUnavailableScreen();
         throw Exception('Server unavailable - please try again later');
@@ -420,16 +353,16 @@ class RestApiRepositoryBase {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        final navigationService = GetIt.instance<NavigationService>();
-        final context = navigationService.navigatorKey.currentContext;
+        final context = app_router
+            .RouterConfig.router.routerDelegate.navigatorKey.currentContext;
         final eventProvider = GetIt.instance<EventProvider>();
 
-        if (context != null) {
-          final result = navigationService.push(
-            const OfflineWidget(),
-          );
-
-          result.then((_) {
+        if (context != null && context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const OfflineWidget(),
+          ).then((_) {
             isShowingOfflineScreen = false;
             resetGlobalErrorState();
 
@@ -452,16 +385,16 @@ class RestApiRepositoryBase {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        final navigationService = GetIt.instance<NavigationService>();
-        final context = navigationService.navigatorKey.currentContext;
+        final context = app_router
+            .RouterConfig.router.routerDelegate.navigatorKey.currentContext;
         final eventProvider = GetIt.instance<EventProvider>();
 
-        if (context != null) {
-          final result = navigationService.push(
-            const ServerUnavailableWidget(),
-          );
-
-          result.then((_) {
+        if (context != null && context.mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const ServerUnavailableWidget(),
+          ).then((_) {
             isShowingServerUnavailableScreen = false;
             resetGlobalErrorState();
 
@@ -499,15 +432,6 @@ class RestApiRepositoryBase {
     await prefs.remove("captured_ktp");
     await prefs.remove('captured_face');
 
-    try {
-      final authService = GetIt.instance<AuthenticationService>();
-      await authService.clearLoginInfo();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error clearing via auth service: $e');
-      }
-    }
-
     LoadingStateManager().notifyBusyState(false);
   }
 
@@ -516,41 +440,53 @@ class RestApiRepositoryBase {
     bool hasApiErrorHandling = false;
 
     if (response is Map<String, dynamic>) {
-      final code = response['code'];
+      final success = response['success'];
+      if (success != null && success == false) {
+        hasApiErrorHandling = true;
+        final errorMessage = response['message'] ?? 'An error occurred';
 
-      if (code != null) {
-        ResponseCode responseCode;
-
-        if (code is int) {
-          responseCode = ResponseCode.getByCode(code);
-        } else if (code is String) {
-          responseCode = ResponseCode.getByCodeString(code);
-        } else {
-          responseCode = ResponseCode.unknownError;
+        if (!suppressErrorToast) {
+          ToastUtil.showError(errorMessage);
         }
 
-        if (!responseCode.isSuccess) {
-          hasApiErrorHandling = true;
-
-          await _errorHandler.handleError(
-            response: response,
-            showToast: !suppressErrorToast,
-            handleLogout: true,
-          );
-
-          if (suppressErrorToast) {
-            final errorMessage =
-                response['msg'] ?? response['message'] ?? responseCode.message;
-
-            throw Exception(errorMessage);
-          }
-
-          // if (responseCode.requiresLogout && wasHandled) {
-          //   throw SessionExpiredException(
-          //       'Session expired due to: ${responseCode.message}');
-          // }
-        }
+        throw Exception(errorMessage);
       }
+
+      // final code = response['code'];
+
+      // if (code != null) {
+      //   ResponseCode responseCode;
+
+      //   if (code is int) {
+      //     responseCode = ResponseCode.getByCode(code);
+      //   } else if (code is String) {
+      //     responseCode = ResponseCode.getByCodeString(code);
+      //   } else {
+      //     responseCode = ResponseCode.unknownError;
+      //   }
+
+      //   if (!responseCode.isSuccess) {
+      //     hasApiErrorHandling = true;
+
+      //     await _errorHandler.handleError(
+      //       response: response,
+      //       showToast: !suppressErrorToast,
+      //       handleLogout: true,
+      //     );
+
+      //     if (suppressErrorToast) {
+      //       final errorMessage =
+      //           response['msg'] ?? response['message'] ?? responseCode.message;
+
+      //       throw Exception(errorMessage);
+      //     }
+
+      //     // if (responseCode.requiresLogout && wasHandled) {
+      //     //   throw SessionExpiredException(
+      //     //       'Session expired due to: ${responseCode.message}');
+      //     // }
+      //   }
+      // }
     }
 
     if (!hasApiErrorHandling && httpStatusCode != 200) {

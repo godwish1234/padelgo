@@ -49,7 +49,7 @@ class RegisterViewModel extends BaseViewModel {
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response.message),
+              content: Text(response.message ?? ''),
               backgroundColor: Colors.green,
               duration: const Duration(seconds: 2),
             ),

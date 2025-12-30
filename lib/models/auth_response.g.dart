@@ -18,7 +18,7 @@ Map<String, dynamic> _$AuthDataToJson(AuthData instance) => <String, dynamic>{
 
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(
       success: json['success'] as bool,
-      message: json['message'] as String,
+      message: json['message'] as String?,
       data: AuthData.fromJson(json['data'] as Map<String, dynamic>),
     );
 

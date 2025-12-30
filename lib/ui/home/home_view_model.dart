@@ -60,11 +60,6 @@ class HomeViewModel extends BaseViewModel {
   bool get hasMoreReminders => _reminders.length > 3;
 
   Future<void> initialize() async {
-    // Get current user from authentication service
-    final loginInfo = _auth.getCurrentLoginInfo();
-    if (loginInfo != null && loginInfo is UserModel) {
-      user = loginInfo;
-    }
 
     DateTime startDate = DateTime.now().subtract(const Duration(days: 4));
     await updateDate(

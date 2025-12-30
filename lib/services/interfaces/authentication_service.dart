@@ -10,9 +10,6 @@ abstract class AuthenticationService<T> {
     String password,
     String passwordConfirmation,
   );
-  Future<bool> isAlreadyLoggedIn();
-  void signOut();
-  bool isLoggedIn();
-  dynamic getCurrentLoginInfo();
-  Future<void> clearLoginInfo();
+  Future<void> signOut();
+  Future<bool> isLoggedIn();
 }
