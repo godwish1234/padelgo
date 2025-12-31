@@ -103,14 +103,14 @@ class _SplashViewState extends State<SplashView> {
                       //               fontStyle: FontStyle.italic))
                       //     ])),
                       // const SizedBox(height: 50),
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.asset(
-                            IconConstants.logo,
-                            width: 95,
-                            height: 95,
-                            fit: BoxFit.cover,
-                          )),
+                      // ClipRRect(
+                      //     borderRadius: BorderRadius.circular(12),
+                      //     child: Image.asset(
+                      //       IconConstants.logo,
+                      //       width: 95,
+                      //       height: 95,
+                      //       fit: BoxFit.cover,
+                      //     )),
                       const SizedBox(height: 25),
                     ]),
               ))

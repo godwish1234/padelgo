@@ -1,8 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:padelgo/ui/activity/new_activity/create_activity_view.dart';
 import 'package:padelgo/ui/home/find_game/find_game_view.dart';
+import 'package:padelgo/ui/home/news_detail_view.dart';
+import 'package:padelgo/ui/home/widgets/skeleton_loader.dart';
 import 'package:padelgo/ui/notifications/notification_view.dart';
 import 'package:padelgo/ui/chat/chat_view.dart';
 import 'package:padelgo/config/router_config.dart';
@@ -10,7 +11,6 @@ import 'package:stacked/stacked.dart';
 import 'package:padelgo/ui/home/home_view_model.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:intl/intl.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -20,18 +20,13 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  Timer? _autoSlideTimer;
-
   @override
   void initState() {
     super.initState();
-    // TODO: Re-implement auto-slide with ViewModel
-    // _startAutoSlide();
   }
 
   @override
   void dispose() {
-    _autoSlideTimer?.cancel();
     super.dispose();
   }
 
@@ -105,7 +100,8 @@ class _HomeViewState extends State<HomeView> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color:
+                              Theme.of(context).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(
@@ -255,48 +251,7 @@ class _HomeViewState extends State<HomeView> {
       viewModelBuilder: () => HomeViewModel(),
       onViewModelReady: (vm) => vm.initialize(),
       builder: (context, vm, child) {
-        // Show loading state
-        if (vm.isLoading && vm.newsItems.isEmpty) {
-          return Scaffold(
-            backgroundColor: Colors.grey[50],
-            body: const Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        // Show error state
-        if (vm.errorMessage != null && vm.newsItems.isEmpty) {
-          return Scaffold(
-            backgroundColor: Colors.grey[50],
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error, size: 48),
-                    const SizedBox(height: 12),
-                    Text(
-                      vm.errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: vm.initialize,
-                      child: const Text('Retry'),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
-        // Main content
+        // Main content - Always show content with skeleton loaders
         return Scaffold(
           backgroundColor: Colors.grey[50],
           body: CustomScrollView(
@@ -310,7 +265,7 @@ class _HomeViewState extends State<HomeView> {
                       children: [
                         // Sports Background Image
                         Container(
-                          height: 260,
+                          height: 180,
                           decoration: const BoxDecoration(
                             image: DecorationImage(
                               image: AssetImage('assets/images/bg.jpg'),
@@ -338,7 +293,7 @@ class _HomeViewState extends State<HomeView> {
                         SafeArea(
                           bottom: false,
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -354,13 +309,13 @@ class _HomeViewState extends State<HomeView> {
                                               const Icon(
                                                 Icons.sports_tennis,
                                                 color: Colors.white,
-                                                size: 28,
+                                                size: 20,
                                               ),
-                                              const SizedBox(width: 8),
+                                              const SizedBox(width: 6),
                                               Text(
                                                 'Padel Go',
                                                 style: GoogleFonts.poppins(
-                                                  fontSize: 28,
+                                                  fontSize: 20,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
                                                   letterSpacing: 0.5,
@@ -368,37 +323,42 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 6),
                                           GestureDetector(
-                                            onTap: () => _showLocationDialog(context, vm),
+                                            onTap: () => _showLocationDialog(
+                                                context, vm),
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 6,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(20),
+                                                color: Colors.white
+                                                    .withOpacity(0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   const Icon(Icons.location_on,
-                                                      size: 16,
+                                                      size: 14,
                                                       color: Colors.white),
-                                                  const SizedBox(width: 6),
+                                                  const SizedBox(width: 4),
                                                   Text(
                                                     vm.selectedCity,
                                                     style: GoogleFonts.poppins(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                       color: Colors.white,
                                                     ),
                                                   ),
-                                                  const SizedBox(width: 6),
+                                                  const SizedBox(width: 4),
                                                   const Icon(
                                                       Icons.keyboard_arrow_down,
-                                                      size: 18,
+                                                      size: 14,
                                                       color: Colors.white),
                                                 ],
                                               ),
@@ -440,7 +400,7 @@ class _HomeViewState extends State<HomeView> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 8),
                                 if (vm.user != null)
                                   GestureDetector(
                                     onTap: () {
@@ -448,7 +408,7 @@ class _HomeViewState extends State<HomeView> {
                                     },
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 14),
+                                          horizontal: 12, vertical: 10),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.95),
                                         borderRadius: BorderRadius.circular(14),
@@ -471,8 +431,8 @@ class _HomeViewState extends State<HomeView> {
                                                     color: Theme.of(context)
                                                         .colorScheme
                                                         .primary,
-                                                    size: 18),
-                                                const SizedBox(width: 10),
+                                                    size: 16),
+                                                const SizedBox(width: 8),
                                                 Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
@@ -480,7 +440,7 @@ class _HomeViewState extends State<HomeView> {
                                                     Text('Sporta Super',
                                                         style:
                                                             GoogleFonts.poppins(
-                                                                fontSize: 12,
+                                                                fontSize: 11,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w600,
@@ -489,7 +449,7 @@ class _HomeViewState extends State<HomeView> {
                                                     Text('Membership >',
                                                         style:
                                                             GoogleFonts.poppins(
-                                                                fontSize: 11,
+                                                                fontSize: 10,
                                                                 color:
                                                                     Colors.grey[
                                                                         600])),
@@ -501,7 +461,7 @@ class _HomeViewState extends State<HomeView> {
                                           // Center divider
                                           Container(
                                               width: 1,
-                                              height: 32,
+                                              height: 28,
                                               color: const Color.fromRGBO(
                                                   224, 224, 224, 1)),
                                           Expanded(
@@ -524,12 +484,12 @@ class _HomeViewState extends State<HomeView> {
                                                                     context)
                                                                 .colorScheme
                                                                 .primary,
-                                                            size: 16),
+                                                            size: 14),
                                                         const SizedBox(
-                                                            width: 6),
+                                                            width: 4),
                                                         Text('500.000',
                                                             style: GoogleFonts.poppins(
-                                                                fontSize: 14,
+                                                                fontSize: 12,
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .w700,
@@ -540,7 +500,7 @@ class _HomeViewState extends State<HomeView> {
                                                     Text('Sporta Points',
                                                         style:
                                                             GoogleFonts.poppins(
-                                                                fontSize: 11,
+                                                                fontSize: 10,
                                                                 color:
                                                                     Colors.grey[
                                                                         600])),
@@ -559,14 +519,16 @@ class _HomeViewState extends State<HomeView> {
                         ),
                         // Quick Actions - Overlapping bottom
                         Positioned(
-                          bottom: -65,
-                          left: 20,
-                          right: 20,
-                          child: _buildModernQuickActions(context, vm),
+                          bottom: -60,
+                          left: 16,
+                          right: 16,
+                          child: vm.isLoadingQuickActions
+                              ? _buildQuickActionsSkeleton()
+                              : _buildModernQuickActions(context, vm),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 75),
+                    const SizedBox(height: 50),
                   ],
                 ),
               ),
@@ -574,16 +536,16 @@ class _HomeViewState extends State<HomeView> {
               // What's New Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
                     children: [
                       Icon(Icons.auto_awesome,
-                          color: Colors.amber[700], size: 20),
-                      const SizedBox(width: 8),
+                          color: Colors.amber[700], size: 16),
+                      const SizedBox(width: 6),
                       Text(
                         'What\'s New',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -594,15 +556,186 @@ class _HomeViewState extends State<HomeView> {
 
               // News Cards
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 200,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: vm.newsItems.length,
-                    itemBuilder: (context, index) {
-                      return _buildModernNewsCard(context, vm.newsItems[index]);
-                    },
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 160,
+                      child: vm.isLoadingNews
+                          ? ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: 3,
+                              itemBuilder: (context, index) {
+                                return const NewsCardSkeleton();
+                              },
+                            )
+                          : vm.newsItems.isEmpty
+                              ? const Center(
+                                  child: Text('No news available'),
+                                )
+                              : PageView.builder(
+                                  controller: vm.newsPageController,
+                                  onPageChanged: vm.onNewsPageChanged,
+                                  itemCount: vm.newsItems.length,
+                                  itemBuilder: (context, index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      child: _buildModernNewsCard(
+                                          context, vm.newsItems[index]),
+                                    );
+                                  },
+                                ),
+                    ),
+                    if (!vm.isLoadingNews && vm.newsItems.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            vm.newsItems.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: vm.currentNewsPage == index
+                                    ? Theme.of(context).primaryColor
+                                    : Colors.grey.withOpacity(0.3),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              // Reminders Section
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.notifications_active,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Upcoming',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (vm.hasMoreReminders)
+                        TextButton(
+                          onPressed: () {},
+                          child: Text(
+                            'See All',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Reminders List
+              SliverToBoxAdapter(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: vm.urgentReminders.map((reminder) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                _getReminderIcon(reminder.icon),
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    reminder.title,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    reminder.time,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getReminderTypeColor(reminder.type)
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                reminder.type,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getReminderTypeColor(reminder.type),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
@@ -610,14 +743,14 @@ class _HomeViewState extends State<HomeView> {
               // Popular Venues Section
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Popular Venues',
                         style: GoogleFonts.poppins(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -626,7 +759,7 @@ class _HomeViewState extends State<HomeView> {
                         child: Text(
                           'See All',
                           style: GoogleFonts.poppins(
-                            fontSize: 13,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -639,15 +772,38 @@ class _HomeViewState extends State<HomeView> {
 
               // Venues List
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 240,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: vm.venues.length,
-                    itemBuilder: (context, index) {
-                      return _buildModernVenueCard(context, vm.venues[index]);
-                    },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: SizedBox(
+                    height: 100,
+                    child: vm.isLoadingVenues
+                        ? ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 5,
+                            itemBuilder: (context, index) {
+                              return const VenueCardSkeleton();
+                            },
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: vm.venues.length,
+                            itemBuilder: (context, index) {
+                              return _buildModernVenueCard(
+                                  context, vm.venues[index]);
+                            },
+                          ),
                   ),
                 ),
               ),
@@ -664,106 +820,117 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildModernNewsCard(BuildContext context, NewsItem news) {
-    return Container(
-      width: 300,
-      margin: const EdgeInsets.only(right: 12, left: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          children: [
-            // Image
-            Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: news.imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: Colors.grey[300],
-                ),
-                errorWidget: (context, url, error) => Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.error),
-                ),
-              ),
+    return GestureDetector(
+      onTap: () {
+        if (news.newsModel != null) {
+          Navigator.of(context, rootNavigator: true).push(
+            MaterialPageRoute(
+              builder: (context) => NewsDetailView(news: news.newsModel!),
             ),
-            // Gradient Overlay
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.8),
-                    ],
-                    stops: const [0.5, 1.0],
-                  ),
-                ),
-              ),
-            ),
-            // Category Badge
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  news.category,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            // Content
-            Positioned(
-              bottom: 16,
-              left: 16,
-              right: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    news.title,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    news.subtitle,
-                    style: GoogleFonts.poppins(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+          );
+        }
+      },
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 10, left: 2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // Image
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: news.imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error),
+                  ),
+                ),
+              ),
+              // Gradient Overlay
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                      stops: const [0.5, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              // Category Badge
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    news.category,
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              // Content
+              Positioned(
+                bottom: 12,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      news.title,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      news.subtitle,
+                      style: GoogleFonts.poppins(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -771,117 +938,71 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildModernVenueCard(BuildContext context, Venue venue) {
     return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12, left: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      width: 80,
+      margin: const EdgeInsets.only(right: 12),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Stack(
-              children: [
-                CachedNetworkImage(
-                  imageUrl: venue.imageUrl,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    height: 140,
-                    color: Colors.grey[300],
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 140,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.error),
-                  ),
-                ),
-                // Rating Badge
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          venue.rating.toString(),
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+          // Logo with gradient background
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.grey[50]!,
+                  Colors.grey[100]!,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.grey[200]!,
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(11),
+              child: CachedNetworkImage(
+                imageUrl: venue.imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[100],
+                  child: Center(
+                    child: Icon(
+                      Icons.sports_tennis,
+                      size: 24,
+                      color: Colors.grey[400],
                     ),
                   ),
                 ),
-              ],
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.grey[100],
+                  child: Center(
+                    child: Icon(
+                      Icons.sports_tennis,
+                      size: 24,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
-          // Details
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  venue.name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.location_on, size: 12, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        venue.distance,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  venue.priceRange,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 6),
+          // Court Name
+          Text(
+            venue.name,
+            style: GoogleFonts.poppins(
+              fontSize: 9,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              height: 1.2,
             ),
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -895,22 +1016,22 @@ class _HomeViewState extends State<HomeView> {
       child: Stack(
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey[100],
               shape: BoxShape.circle,
             ),
             child: Icon(icon,
-                size: 22, color: isDark ? Colors.white : Colors.grey[700]),
+                size: 18, color: isDark ? Colors.white : Colors.grey[700]),
           ),
           if (badgeCount > 0)
             Positioned(
               top: 0,
               right: 0,
               child: Container(
-                width: 16,
-                height: 16,
+                width: 14,
+                height: 14,
                 decoration: BoxDecoration(
                   color: Colors.redAccent,
                   shape: BoxShape.circle,
@@ -920,7 +1041,7 @@ class _HomeViewState extends State<HomeView> {
                   child: Text(
                     badgeCount.toString(),
                     style: GoogleFonts.poppins(
-                      fontSize: 9,
+                      fontSize: 8,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -945,7 +1066,7 @@ class _HomeViewState extends State<HomeView> {
         Row(
           children: [
             for (int i = 0; i < primaryActions.length; i++) ...[
-              if (i > 0) const SizedBox(width: 12),
+              if (i > 0) const SizedBox(width: 8),
               Expanded(
                 child: _buildPrimaryActionButton(
                   context,
@@ -955,12 +1076,12 @@ class _HomeViewState extends State<HomeView> {
             ],
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         // Secondary Actions - Smaller buttons
         Row(
           children: [
             for (int i = 0; i < secondaryActions.length; i++) ...[
-              if (i > 0) const SizedBox(width: 8),
+              if (i > 0) const SizedBox(width: 6),
               Expanded(
                 child: _buildSecondaryActionButton(
                   context,
@@ -982,7 +1103,7 @@ class _HomeViewState extends State<HomeView> {
             }
           : null,
       child: Container(
-        height: 120,
+        height: 90,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: action.available
@@ -997,14 +1118,14 @@ class _HomeViewState extends State<HomeView> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: action.available
                   ? action.color.withOpacity(0.3)
                   : Colors.grey.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -1012,30 +1133,30 @@ class _HomeViewState extends State<HomeView> {
           children: [
             // Main content
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
                       action.icon,
                       color: Colors.white,
-                      size: 28,
+                      size: 22,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Flexible(
                     child: Text(
                       action.label,
                       style: GoogleFonts.poppins(
-                        fontSize: 15,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -1049,16 +1170,16 @@ class _HomeViewState extends State<HomeView> {
             // Coming Soon Badge
             if (!action.available)
               Positioned(
-                top: 12,
-                right: 12,
+                top: 8,
+                right: 8,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
+                    horizontal: 8,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -1070,7 +1191,7 @@ class _HomeViewState extends State<HomeView> {
                   child: Text(
                     'Coming Soon',
                     style: GoogleFonts.poppins(
-                      fontSize: 10,
+                      fontSize: 8,
                       fontWeight: FontWeight.bold,
                       color: Colors.grey[700],
                     ),
@@ -1091,10 +1212,10 @@ class _HomeViewState extends State<HomeView> {
             }
           : null,
       child: Container(
-        height: 80,
+        height: 60,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: action.available
                 ? action.color.withOpacity(0.2)
@@ -1113,31 +1234,31 @@ class _HomeViewState extends State<HomeView> {
           children: [
             // Main content
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(7),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       color: action.available
                           ? action.color.withOpacity(0.1)
                           : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       action.icon,
                       color: action.available ? action.color : Colors.grey[500],
-                      size: 20,
+                      size: 16,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 4),
                   Flexible(
                     child: Text(
                       action.label,
                       style: GoogleFonts.poppins(
-                        fontSize: 9,
+                        fontSize: 8,
                         fontWeight: FontWeight.w600,
                         color: action.available
                             ? Colors.black87
@@ -1154,12 +1275,12 @@ class _HomeViewState extends State<HomeView> {
             // Coming Soon Badge
             if (!action.available)
               Positioned(
-                top: 6,
-                right: 6,
+                top: 4,
+                right: 4,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
+                    horizontal: 5,
+                    vertical: 2,
                   ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -1168,12 +1289,12 @@ class _HomeViewState extends State<HomeView> {
                         Colors.deepOrange[500]!,
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'Soon',
                     style: GoogleFonts.poppins(
-                      fontSize: 7,
+                      fontSize: 6,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -1202,6 +1323,68 @@ class _HomeViewState extends State<HomeView> {
           ),
         );
         break;
+    }
+  }
+
+  Widget _buildQuickActionsSkeleton() {
+    return Column(
+      children: [
+        // Primary Actions - Large buttons
+        Row(
+          children: [
+            for (int i = 0; i < 2; i++) ...[
+              if (i > 0) const SizedBox(width: 8),
+              const Expanded(
+                child: QuickActionSkeleton(isPrimary: true),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Secondary Actions - Smaller buttons
+        Row(
+          children: [
+            for (int i = 0; i < 4; i++) ...[
+              if (i > 0) const SizedBox(width: 6),
+              const Expanded(
+                child: QuickActionSkeleton(isPrimary: false),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  IconData _getReminderIcon(String iconName) {
+    switch (iconName) {
+      case 'sports_tennis':
+        return Icons.sports_tennis;
+      case 'credit_card':
+        return Icons.credit_card;
+      case 'emoji_events':
+        return Icons.emoji_events;
+      case 'groups':
+        return Icons.groups;
+      case 'fitness_center':
+        return Icons.fitness_center;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  Color _getReminderTypeColor(String type) {
+    switch (type) {
+      case 'Event':
+        return Colors.blue;
+      case 'Payment':
+        return Colors.orange;
+      case 'Competition':
+        return Colors.purple;
+      case 'Reminder':
+        return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 }

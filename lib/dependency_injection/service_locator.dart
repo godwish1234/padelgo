@@ -5,6 +5,8 @@ import 'package:padelgo/services/implementations/profile_service_impl.dart';
 import 'package:padelgo/services/interfaces/authentication_service.dart';
 import 'package:padelgo/services/interfaces/booking_service.dart';
 import 'package:padelgo/services/interfaces/profile_service.dart';
+import 'package:padelgo/services/interfaces/home_service.dart';
+import 'package:padelgo/services/implementations/home_service_impl.dart';
 import 'package:padelgo/providers/interfaces/internet_connectivity_provider.dart';
 import 'package:padelgo/providers/implementations/internet_connectivity_provider_impl.dart';
 import 'package:padelgo/repository/base/rest_api_repository_base.dart';
@@ -12,6 +14,8 @@ import 'package:padelgo/repository/interfaces/authentication_repository.dart';
 import 'package:padelgo/repository/implementations/authentication_repository_impl.dart';
 import 'package:padelgo/repository/interfaces/profile_repository.dart';
 import 'package:padelgo/repository/implementations/profile_repository_impl.dart';
+import 'package:padelgo/repository/interfaces/home_repository.dart';
+import 'package:padelgo/repository/implementations/home_repository_impl.dart';
 
 final GetIt serviceLocator = GetIt.instance;
 
@@ -34,6 +38,16 @@ Future setupServiceLocator() async {
   // Register Profile Service
   serviceLocator.registerLazySingleton<ProfileService>(
     () => ProfileServiceImpl(),
+  );
+
+  // Register Home Repository
+  serviceLocator.registerLazySingleton<IHomeRepository>(
+    () => HomeRepositoryImpl(),
+  );
+
+  // Register Home Service
+  serviceLocator.registerLazySingleton<IHomeService>(
+    () => HomeServiceImpl(serviceLocator<IHomeRepository>()),
   );
 
   // Register Internet Connectivity Provider

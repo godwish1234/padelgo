@@ -1,14 +1,25 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:stacked/stacked.dart';
 import 'package:get_it/get_it.dart';
-import 'package:padelgo/services/interfaces/authentication_service.dart';
+import 'package:padelgo/services/interfaces/home_service.dart';
 import 'package:padelgo/models/user_model.dart';
+import 'package:padelgo/models/news_model.dart';
+import 'package:padelgo/models/partner_model.dart';
 
 class HomeViewModel extends BaseViewModel {
   // User data
   UserModel? user;
 
-  final _auth = GetIt.I<AuthenticationService>();
+  final _homeService = GetIt.I<IHomeService>();
+
+  // News auto-slide
+  PageController? _newsPageController;
+  Timer? _autoSlideTimer;
+  int _currentNewsPage = 0;
+
+  PageController? get newsPageController => _newsPageController;
+  int get currentNewsPage => _currentNewsPage;
 
   // Location state
   String _selectedCity = 'Jakarta Selatan'; // Default city
@@ -40,6 +51,9 @@ class HomeViewModel extends BaseViewModel {
   List<QuickAction> _quickActions = [];
 
   bool _isLoading = false;
+  bool _isLoadingNews = false;
+  bool _isLoadingVenues = false;
+  bool _isLoadingQuickActions = false;
   String? _errorMessage;
 
   // Getters
@@ -48,6 +62,9 @@ class HomeViewModel extends BaseViewModel {
   List<Venue> get venues => _venues;
   List<QuickAction> get quickActions => _quickActions;
   bool get isLoading => _isLoading;
+  bool get isLoadingNews => _isLoadingNews;
+  bool get isLoadingVenues => _isLoadingVenues;
+  bool get isLoadingQuickActions => _isLoadingQuickActions;
   String? get errorMessage => _errorMessage;
 
   // Get urgent reminders for compact view, sorted by nearest due date
@@ -60,6 +77,7 @@ class HomeViewModel extends BaseViewModel {
   bool get hasMoreReminders => _reminders.length > 3;
 
   Future<void> initialize() async {
+    _newsPageController = PageController(viewportFraction: 0.9);
 
     DateTime startDate = DateTime.now().subtract(const Duration(days: 4));
     await updateDate(
@@ -77,7 +95,7 @@ class HomeViewModel extends BaseViewModel {
     notifyListeners();
 
     try {
-      // Load data in parallel
+      // Load data in parallel with individual loading states
       await Future.wait([
         _loadNews(),
         _loadReminders(),
@@ -102,17 +120,43 @@ class HomeViewModel extends BaseViewModel {
   // API Methods - Replace with actual API calls
 
   Future<void> _loadNews() async {
-    try {
-      // TODO: Replace with actual API call
-      // final response = await _apiService.getNews();
-      // _newsItems = response.data.map((e) => NewsItem.fromJson(e)).toList();
+    _isLoadingNews = true;
+    notifyListeners();
 
-      // Simulating API call with dummy data
-      await Future.delayed(const Duration(milliseconds: 300));
-      _newsItems = _getDummyNews();
+    try {
+      // Fetch news from API
+      final news = await _homeService.getNews();
+      _newsItems = news
+          .map((n) => NewsItem(
+                id: n.id.toString(),
+                imageUrl: n.image,
+                category: n.tag,
+                title: n.title,
+                subtitle: _getSubtitle(n.content),
+                newsModel: n,
+              ))
+          .toList();
+      _isLoadingNews = false;
+      notifyListeners();
+
+      // Start auto-slide after news loaded
+      if (_newsItems.isNotEmpty) {
+        _startAutoSlide();
+      }
     } catch (e) {
+      _isLoadingNews = false;
+      notifyListeners();
       throw Exception('Failed to load news: $e');
     }
+  }
+
+  // Helper to get subtitle from content
+  String _getSubtitle(String content) {
+    if (content.isEmpty) return '';
+    final firstLine = content.split('\n').first;
+    return firstLine.length > 100
+        ? '${firstLine.substring(0, 100)}...'
+        : firstLine;
   }
 
   Future<void> _loadReminders() async {
@@ -130,20 +174,43 @@ class HomeViewModel extends BaseViewModel {
   }
 
   Future<void> _loadVenues() async {
-    try {
-      // TODO: Replace with actual API call
-      // final response = await _apiService.getVenues();
-      // _venues = response.data.map((e) => Venue.fromJson(e)).toList();
+    _isLoadingVenues = true;
+    notifyListeners();
 
-      // Simulating API call with dummy data
-      await Future.delayed(const Duration(milliseconds: 300));
-      _venues = _getDummyVenues();
+    try {
+      // Fetch partners from API
+      final List<PartnerModel> partners = await _homeService.getPartners();
+      _venues = partners
+          .expand((partner) => partner.locations.map((location) => Venue(
+                id: location.id.toString(),
+                name: location.name,
+                address: location.address,
+                distance: '${location.city}',
+                rating: 4.5,
+                reviewCount: 0,
+                imageUrl: partner.logo ?? 'https://via.placeholder.com/150',
+                priceRange: 'See venue for details',
+                category: 'Partner',
+                features: [],
+                openHours: '',
+                description: partner.description ?? '',
+                images: [partner.logo ?? 'https://via.placeholder.com/150'],
+                reviews: [],
+              )))
+          .toList();
+      _isLoadingVenues = false;
+      notifyListeners();
     } catch (e) {
+      _isLoadingVenues = false;
+      notifyListeners();
       throw Exception('Failed to load venues: $e');
     }
   }
 
   Future<void> _loadQuickActions() async {
+    _isLoadingQuickActions = true;
+    notifyListeners();
+
     try {
       // TODO: Replace with actual API call
       // final response = await _apiService.getQuickActions();
@@ -152,7 +219,11 @@ class HomeViewModel extends BaseViewModel {
       // Simulating API call with dummy data
       await Future.delayed(const Duration(milliseconds: 300));
       _quickActions = _getDummyQuickActions();
+      _isLoadingQuickActions = false;
+      notifyListeners();
     } catch (e) {
+      _isLoadingQuickActions = false;
+      notifyListeners();
       throw Exception('Failed to load quick actions: $e');
     }
   }
@@ -190,50 +261,40 @@ class HomeViewModel extends BaseViewModel {
     await loadHomeData();
   }
 
-  // Dummy data methods - Replace with API calls
-
-  List<NewsItem> _getDummyNews() {
-    return [
-      NewsItem(
-        id: 'news1',
-        imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
-        title: 'Jakarta Padel Open 2025',
-        subtitle: 'This Weekend at Senayan Padel Club',
-        category: 'Tournament',
-      ),
-      NewsItem(
-        id: 'news2',
-        imageUrl:
-            'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
-        title: 'New Premium Padel Courts',
-        subtitle: 'Opening at Kemayoran Padel Center',
-        category: 'Facility',
-      ),
-      NewsItem(
-        id: 'news3',
-        imageUrl:
-            'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
-        title: 'Padel League Registration',
-        subtitle: 'Now Open - BSD Padel Arena',
-        category: 'Registration',
-      ),
-      NewsItem(
-        id: 'news4',
-        imageUrl:
-            'https://images.unsplash.com/photo-1609710228159-0fa9bd7c0827',
-        title: 'Pro Padel Tournament',
-        subtitle: 'Pondok Indah Padel Club',
-        category: 'Competition',
-      ),
-      NewsItem(
-        id: 'news5',
-        imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64',
-        title: 'Court Resurfacing Complete',
-        subtitle: 'Upgraded at Cengkareng Padel',
-        category: 'Update',
-      ),
-    ];
+  // Auto-slide methods
+  void _startAutoSlide() {
+    _stopAutoSlide();
+    _autoSlideTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_newsPageController != null && _newsItems.isNotEmpty) {
+        _currentNewsPage = (_currentNewsPage + 1) % _newsItems.length;
+        _newsPageController!.animateToPage(
+          _currentNewsPage,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+        notifyListeners();
+      }
+    });
   }
+
+  void _stopAutoSlide() {
+    _autoSlideTimer?.cancel();
+    _autoSlideTimer = null;
+  }
+
+  void onNewsPageChanged(int page) {
+    _currentNewsPage = page;
+    notifyListeners();
+    _startAutoSlide();
+  }
+
+  @override
+  void dispose() {
+    _stopAutoSlide();
+    _newsPageController?.dispose();
+    super.dispose();
+  }
+
 
   List<Reminder> _getDummyReminders() {
     final now = DateTime.now();
@@ -289,104 +350,6 @@ class HomeViewModel extends BaseViewModel {
     ];
   }
 
-  List<Venue> _getDummyVenues() {
-    return [
-      Venue(
-        id: 'senayan',
-        name: 'Senayan Padel Club',
-        address: 'Jl. Pintu Satu Senayan, Jakarta Pusat',
-        distance: '2.1 km',
-        rating: 4.8,
-        reviewCount: 156,
-        imageUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
-        priceRange: 'Rp 200,000 - 350,000',
-        category: 'Premium',
-        features: [
-          'Indoor Courts',
-          'Outdoor Courts',
-          'Pro Shop',
-          'Locker Room',
-          'Shower'
-        ],
-        openHours: '06:00 - 22:00',
-        description:
-            'Premier padel club in the heart of Jakarta with 8 professional courts, world-class facilities and professional coaching staff.',
-        images: [
-          'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
-          'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
-          'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
-        ],
-        reviews: [
-          VenueReview(
-            name: 'Ahmad Rizki',
-            rating: 5,
-            comment:
-                'Excellent padel courts and well-maintained facilities. Staff is very professional and helpful.',
-            date: '2 days ago',
-          ),
-          VenueReview(
-            name: 'Sarah Putri',
-            rating: 4,
-            comment:
-                'Great courts and atmosphere. Can get crowded during peak hours on weekends.',
-            date: '1 week ago',
-          ),
-        ],
-      ),
-      Venue(
-        id: 'pondok_indah',
-        name: 'Pondok Indah Padel Center',
-        address: 'Jl. Metro Pondok Indah, Jakarta Selatan',
-        distance: '5.3 km',
-        rating: 4.6,
-        reviewCount: 98,
-        imageUrl:
-            'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
-        priceRange: 'Rp 180,000 - 300,000',
-        category: 'Standard',
-        features: [
-          '4 Courts',
-          'Coaching Available',
-          'Equipment Rental',
-          'Cafe'
-        ],
-        openHours: '07:00 - 21:00',
-        description:
-            'Family-friendly padel center with modern courts and professional coaching available for all skill levels.',
-        images: [
-          'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67',
-          'https://images.unsplash.com/photo-1554068865-24cecd4e34b8',
-        ],
-        reviews: [],
-      ),
-      Venue(
-        id: 'kemayoran',
-        name: 'Kemayoran Padel Arena',
-        address: 'Jl. Kemayoran Gempol, Jakarta Pusat',
-        distance: '3.8 km',
-        rating: 4.5,
-        reviewCount: 124,
-        imageUrl:
-            'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
-        priceRange: 'Rp 150,000 - 250,000',
-        category: 'Budget',
-        features: [
-          '3 Courts',
-          'Equipment Rental',
-          'Parking',
-          'Beginner Friendly'
-        ],
-        openHours: '06:00 - 23:00',
-        description:
-            'Affordable padel arena with good quality courts perfect for recreational and competitive play. Great for beginners.',
-        images: [
-          'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea',
-        ],
-        reviews: [],
-      ),
-    ];
-  }
-
   List<QuickAction> _getDummyQuickActions() {
     return [
       // Primary Actions - Main features
@@ -418,6 +381,7 @@ class NewsItem {
   final String title;
   final String subtitle;
   final String category;
+  final NewsModel? newsModel;
 
   NewsItem({
     required this.id,
@@ -425,6 +389,7 @@ class NewsItem {
     required this.title,
     required this.subtitle,
     required this.category,
+    this.newsModel,
   });
 
   factory NewsItem.fromJson(Map<String, dynamic> json) {

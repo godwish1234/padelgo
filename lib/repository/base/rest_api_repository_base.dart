@@ -221,6 +221,11 @@ class RestApiRepositoryBase {
             )
             .timeout(_apiTimeout);
 
+        if (kDebugMode) {
+          print("Response Status Code: ${response.statusCode}");
+          print("Response Body: ${response.body}");
+        }
+
         final decodedResponse = jsonDecode(response.body);
 
         await _handleHttpAndApiResponse(response.statusCode, decodedResponse,
@@ -235,6 +240,11 @@ class RestApiRepositoryBase {
         setGlobalServerError();
         _showOfflineScreen();
         throw Exception('Connection timed out');
+      } on FormatException catch (e) {
+        if (kDebugMode) {
+          print('JSON decode error: $e');
+        }
+        throw Exception('Invalid response from server');
       }
     } on SessionExpiredException {
       LoadingStateManager().notifyBusyState(false);
@@ -437,126 +447,112 @@ class RestApiRepositoryBase {
 
   Future<void> _handleHttpAndApiResponse(int httpStatusCode, dynamic response,
       {bool suppressErrorToast = false}) async {
-    bool hasApiErrorHandling = false;
+    // Laravel backend returns structured error responses
+    // Format: { "success": false, "message": "error", "errors": {...} }
 
     if (response is Map<String, dynamic>) {
       final success = response['success'];
-      if (success != null && success == false) {
-        hasApiErrorHandling = true;
-        final errorMessage = response['message'] ?? 'An error occurred';
+      final message = response['message'];
 
+      // Check if response has success field and it's false
+      if (success != null && success == false) {
+        final errorMessage = message ?? 'An error occurred';
+
+        // Show error toast
         if (!suppressErrorToast) {
           ToastUtil.showError(errorMessage);
+        }
+
+        // Handle token expiration for 401 responses
+        if (httpStatusCode == 401 &&
+            (errorMessage.toLowerCase().contains('unauthenticated') ||
+                errorMessage.toLowerCase().contains('token'))) {
+          await handleInvalidToken();
+          throw SessionExpiredException(errorMessage);
         }
 
         throw Exception(errorMessage);
       }
 
-      // final code = response['code'];
+      // Handle Laravel debug exception format (when APP_DEBUG=true)
+      // Format: { "message": "...", "exception": "...", "file": "...", "line": ..., "trace": [...] }
+      if (message != null &&
+          response.containsKey('exception') &&
+          httpStatusCode >= 400) {
+        final errorMessage = message.toString();
 
-      // if (code != null) {
-      //   ResponseCode responseCode;
+        // Show error toast
+        if (!suppressErrorToast) {
+          ToastUtil.showError(errorMessage);
+        }
 
-      //   if (code is int) {
-      //     responseCode = ResponseCode.getByCode(code);
-      //   } else if (code is String) {
-      //     responseCode = ResponseCode.getByCodeString(code);
-      //   } else {
-      //     responseCode = ResponseCode.unknownError;
-      //   }
+        // Handle token expiration for 401 responses
+        if (httpStatusCode == 401 &&
+            (errorMessage.toLowerCase().contains('unauthenticated') ||
+                errorMessage.toLowerCase().contains('token'))) {
+          await handleInvalidToken();
+          throw SessionExpiredException(errorMessage);
+        }
 
-      //   if (!responseCode.isSuccess) {
-      //     hasApiErrorHandling = true;
+        throw Exception(errorMessage);
+      }
 
-      //     await _errorHandler.handleError(
-      //       response: response,
-      //       showToast: !suppressErrorToast,
-      //       handleLogout: true,
-      //     );
-
-      //     if (suppressErrorToast) {
-      //       final errorMessage =
-      //           response['msg'] ?? response['message'] ?? responseCode.message;
-
-      //       throw Exception(errorMessage);
-      //     }
-
-      //     // if (responseCode.requiresLogout && wasHandled) {
-      //     //   throw SessionExpiredException(
-      //     //       'Session expired due to: ${responseCode.message}');
-      //     // }
-      //   }
-      // }
-    }
-
-    if (!hasApiErrorHandling && httpStatusCode != 200) {
-      await _handleHttpStatusError(httpStatusCode);
+      // Success response but non-200/201 status code (shouldn't happen with Laravel)
+      if (httpStatusCode != 200 && httpStatusCode != 201) {
+        await _handleHttpStatusError(httpStatusCode);
+      }
+    } else {
+      // Response is not a map - handle HTTP status codes
+      if (httpStatusCode != 200 && httpStatusCode != 201) {
+        await _handleHttpStatusError(httpStatusCode);
+      }
     }
   }
 
   Future<void> _handleHttpStatusError(int statusCode) async {
-    ResponseCode responseCode;
     String errorMessage;
 
     switch (statusCode) {
       case 400:
-        responseCode = ResponseCode.parameterError;
         errorMessage = 'Bad request. Please check your input.';
         break;
       case 401:
-        responseCode = ResponseCode.unauthorized;
         errorMessage = 'Unauthorized. Please login again.';
-        break;
+        await handleInvalidToken();
+        throw SessionExpiredException(errorMessage);
       case 403:
-        responseCode = ResponseCode.forbidden;
-        errorMessage = 'Access forbidden.';
+        errorMessage = 'Access forbidden. You don\'t have permission.';
         break;
       case 404:
-        responseCode = ResponseCode.notFound;
         errorMessage = 'Resource not found.';
         break;
+      case 405:
+        errorMessage = 'Method not allowed.';
+        break;
       case 408:
-        responseCode = ResponseCode.requestTimeout;
         errorMessage = 'Request timeout. Please try again.';
         break;
+      case 422:
+        errorMessage = 'Validation failed. Please check your input.';
+        break;
       case 429:
-        responseCode = ResponseCode.tooManyRequests;
         errorMessage = 'Too many requests. Please wait a moment.';
         break;
       case 500:
-        responseCode = ResponseCode.internalError;
         errorMessage = 'Server error. Please try again later.';
         break;
       case 502:
-        responseCode = ResponseCode.badGateway;
         errorMessage = 'Bad gateway. Please try again later.';
         break;
       case 503:
-        responseCode = ResponseCode.serviceUnavailable;
         errorMessage = 'Service unavailable. Please try again later.';
         break;
-      case 504:
-        responseCode = ResponseCode.gatewayTimeout;
-        errorMessage = 'Gateway timeout. Please try again.';
-        break;
       default:
-        responseCode = ResponseCode.unknownError;
-        errorMessage = 'Server error ($statusCode). Please try again.';
-        break;
+        errorMessage = 'An error occurred. Please try again.';
     }
 
-    await _errorHandler.handleErrorByCode(
-      code: responseCode.code,
-      message: errorMessage,
-      showToast: true,
-      handleLogout: responseCode.requiresLogout,
-    );
-
-    if (responseCode.requiresLogout) {
-      throw SessionExpiredException('HTTP $statusCode: $errorMessage');
-    } else {
-      throw Exception('HTTP $statusCode: $errorMessage');
-    }
+    ToastUtil.showError(errorMessage);
+    throw Exception(errorMessage);
   }
 
   ApiResponse<T> createApiResponse<T>(

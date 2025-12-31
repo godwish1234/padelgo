@@ -523,14 +523,14 @@ class _RegisterViewState extends State<RegisterView>
                                       _buildSocialButton(
                                         onTap: () =>
                                             vm.signUpWithGoogle(context),
-                                        icon: 'assets/icons/google_icon.png',
+                                        icon: 'icons/google_icon.png',
                                         isDarkMode: isDarkMode,
                                       ),
                                       const SizedBox(width: 20),
                                       _buildSocialButton(
                                         onTap: () =>
                                             vm.signUpWithFacebook(context),
-                                        icon: 'assets/icons/facebook_icon.png',
+                                        icon: 'icons/facebook_icon.png',
                                         isDarkMode: isDarkMode,
                                       ),
                                     ],
